@@ -1,0 +1,8 @@
+[
+  {
+    "confidence": 0.89,
+    "entry": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\ThemeUpdater",
+    "value": "powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1"
+  }
+]
+

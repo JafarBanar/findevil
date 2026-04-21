@@ -1,0 +1,18 @@
+[
+  {
+    "browser": "Edge",
+    "confidence": 0.78,
+    "downloaded_path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip",
+    "timestamp": "2026-04-01T08:11:20Z",
+    "url": "https://cdn-login-check.example/invoice_update.zip",
+    "user": "Analyst"
+  },
+  {
+    "browser": "Edge",
+    "confidence": 0.71,
+    "timestamp": "2026-04-01T08:12:04Z",
+    "url": "https://cdn-login-check.example/readme.html",
+    "user": "Analyst"
+  }
+]
+

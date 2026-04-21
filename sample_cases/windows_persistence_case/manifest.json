@@ -1,0 +1,17 @@
+{
+  "analyst": "CaseTrace Demo",
+  "case_id": "windows-persistence-case",
+  "expected_artifacts": [
+    "amcache_summary",
+    "browser_history",
+    "prefetch_summary",
+    "registry_autoruns",
+    "scheduled_tasks",
+    "timeline_mft",
+    "user_logons",
+    "yara_scan"
+  ],
+  "notes": "Synthetic Windows workstation case with browser-delivered script execution and persistence.",
+  "target_host": "WKSTN-23"
+}
+
