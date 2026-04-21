@@ -50,6 +50,11 @@ Each run creates:
 
 More detail lives in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
+Submission support docs:
+- [Dataset documentation](./docs/DATASETS.md)
+- [Accuracy report draft](./docs/ACCURACY_REPORT.md)
+- [Devpost story draft](./docs/DEVPOST_DRAFT.md)
+
 ## No-VM Development
 You do not need the SIFT VM to build most of this project.
 

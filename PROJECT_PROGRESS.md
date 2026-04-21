@@ -45,6 +45,11 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Pushed initial project commit to GitHub.
 - [x] Synced CaseTrace source into the SIFT VM at `/home/sift/findevil`.
 - [x] Ran a remote-backed sample analysis through the UTM VM bridge.
+- [x] Added Markdown architecture diagram.
+- [x] Added dataset documentation draft.
+- [x] Added accuracy report draft.
+- [x] Added Devpost project story draft.
+- [x] Confirmed MIT license is present.
 
 ## In Progress
 
@@ -109,15 +114,15 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 - [ ] Finish README quickstart for local runs.
 - [ ] Finish SIFT VM setup instructions.
-- [ ] Add architecture diagram.
+- [x] Add architecture diagram.
 - [ ] Add dataset documentation.
 - [ ] Add accuracy report.
 - [ ] Add evidence integrity section.
 - [ ] Add blocked hallucinations section.
 - [ ] Add known limitations section.
-- [ ] Add Devpost project story:
+- [x] Add Devpost project story:
   What it does, how it was built, challenges, what was learned, and what is next.
-- [ ] Add open-source license confirmation.
+- [x] Add open-source license confirmation.
 - [x] Initialize Git repo if needed.
 - [x] Push public GitHub repository.
 
