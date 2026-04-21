@@ -160,6 +160,28 @@ class AnalysisTests(unittest.TestCase):
         self.assertIn("/home/sift/findevil/scripts/sift_tool_bridge.py", command)
         self.assertIn("/cases/case1/image.E01", command)
 
+    def test_remote_runner_can_disable_host_key_check_for_disposable_vm(self) -> None:
+        request = CaseRequest(
+            case_path=str(SAMPLE_CASE),
+            disk_path=str(SAMPLE_CASE / "image.E01"),
+            output_path="runs/unused",
+            tool_backend="sift-ssh",
+            remote_host="127.0.0.1",
+            remote_user="sift",
+            remote_port=2222,
+            remote_workdir="/home/sift/findevil",
+            remote_identity_file="vm_assets/ssh/sift_vm_ed25519",
+            remote_insecure_no_host_key_check=True,
+        )
+        runner = RemoteSIFTRunner(request)
+        command = runner._build_self_test_command()
+
+        self.assertIn("-i", command)
+        self.assertIn("vm_assets/ssh/sift_vm_ed25519", command)
+        self.assertIn("StrictHostKeyChecking=no", command)
+        self.assertIn("UserKnownHostsFile=/dev/null", command)
+        self.assertIn("sift@127.0.0.1", command)
+
     def test_remote_runner_parses_json_payload(self) -> None:
         request = CaseRequest(
             case_path=str(SAMPLE_CASE),

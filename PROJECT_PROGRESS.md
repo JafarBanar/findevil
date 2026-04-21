@@ -17,6 +17,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [ ] End-to-end real case run completed with evidence-linked findings.
 - [ ] Demo, README, accuracy report, architecture diagram, and Devpost write-up completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
+- [x] Local UTM bridge self-test passed over SSH on `127.0.0.1:2222`.
 
 ## Done
 
@@ -42,6 +43,8 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Verified the earlier package contamination root cause.
 - [x] Initialized local Git repository on `main`.
 - [x] Pushed initial project commit to GitHub.
+- [x] Synced CaseTrace source into the SIFT VM at `/home/sift/findevil`.
+- [x] Ran a remote-backed sample analysis through the UTM VM bridge.
 
 ## In Progress
 
@@ -67,8 +70,8 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 ## CaseTrace Product Tasks
 
 - [x] Add or verify `--remote-port 2222` support for the SSH SIFT backend.
-- [ ] Copy or sync the repo into the VM at `/home/sift/findevil`.
-- [ ] Run the bridge self-test against the VM.
+- [x] Copy or sync the repo into the VM at `/home/sift/findevil`.
+- [x] Run the bridge self-test against the VM.
 - [ ] Wire at least two fixture tools to real SIFT commands.
 - [ ] Prioritize these first real tools:
   `timeline_mft`, `registry_autoruns`, `scheduled_tasks`, `user_logons`.
@@ -76,7 +79,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [ ] Ensure every real tool returns structured JSON only.
 - [ ] Ensure every real tool result includes:
   `tool_name`, `inputs`, `raw_artifact_path`, `evidence_ids`, `errors`, and `confidence`.
-- [ ] Make tool failures degrade cleanly instead of crashing the run.
+- [x] Make tool failures degrade cleanly instead of crashing the run.
 - [ ] Add tests for real-tool failure behavior using mocked SSH/SIFT output.
 
 ## Real Case Tasks

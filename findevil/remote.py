@@ -127,9 +127,7 @@ class RemoteSIFTRunner:
 
         remote_script = str(PurePosixPath(self.request.remote_workdir or ".") / "scripts" / "sift_tool_bridge.py")
         remote_disk = self.request.remote_disk_path or self.request.disk_path
-        command = ["ssh", "-p", str(self.request.remote_port)]
-        if self.request.remote_identity_file:
-            command.extend(["-i", self.request.remote_identity_file])
+        command = self._base_ssh_command()
         command.extend(
             [
                 target,
@@ -150,10 +148,23 @@ class RemoteSIFTRunner:
         if self.request.remote_user:
             target = f"{self.request.remote_user}@{target}"
         remote_script = str(PurePosixPath(self.request.remote_workdir or ".") / "scripts" / "sift_tool_bridge.py")
+        command = self._base_ssh_command()
+        command.extend([target, self.request.remote_python, remote_script, "--self-test"])
+        return command
+
+    def _base_ssh_command(self) -> list[str]:
         command = ["ssh", "-p", str(self.request.remote_port)]
         if self.request.remote_identity_file:
             command.extend(["-i", self.request.remote_identity_file])
-        command.extend([target, self.request.remote_python, remote_script, "--self-test"])
+        if self.request.remote_insecure_no_host_key_check:
+            command.extend(
+                [
+                    "-o",
+                    "StrictHostKeyChecking=no",
+                    "-o",
+                    "UserKnownHostsFile=/dev/null",
+                ]
+            )
         return command
 
     def _parse_payload(

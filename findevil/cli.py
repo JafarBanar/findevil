@@ -51,6 +51,11 @@ def _add_remote_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--remote-workdir")
     parser.add_argument("--remote-disk-path")
     parser.add_argument("--remote-identity-file")
+    parser.add_argument(
+        "--remote-insecure-no-host-key-check",
+        action="store_true",
+        help="Disable SSH host-key verification for disposable local VMs only.",
+    )
     parser.add_argument("--remote-python", default="python3")
     parser.add_argument("--remote-timeout-sec", type=int, default=120)
 
@@ -72,6 +77,7 @@ def _request_from_args(args: argparse.Namespace) -> CaseRequest:
         remote_workdir=args.remote_workdir,
         remote_disk_path=args.remote_disk_path,
         remote_identity_file=args.remote_identity_file,
+        remote_insecure_no_host_key_check=args.remote_insecure_no_host_key_check,
         remote_python=args.remote_python,
         remote_timeout_sec=args.remote_timeout_sec,
     )
@@ -93,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
             remote_workdir=args.remote_workdir,
             remote_disk_path=args.remote_disk_path,
             remote_identity_file=args.remote_identity_file,
+            remote_insecure_no_host_key_check=args.remote_insecure_no_host_key_check,
             remote_python=args.remote_python,
             remote_timeout_sec=args.remote_timeout_sec,
         )

@@ -101,6 +101,19 @@ python3 -m findevil check-remote \
   --remote-workdir /home/sift/findevil
 ```
 
+For the disposable local UTM VM created by this repo:
+
+```bash
+python3 -m findevil check-remote \
+  --tool-backend sift-ssh \
+  --remote-host 127.0.0.1 \
+  --remote-port 2222 \
+  --remote-user sift \
+  --remote-identity-file vm_assets/ssh/sift_vm_ed25519 \
+  --remote-insecure-no-host-key-check \
+  --remote-workdir /home/sift/findevil
+```
+
 Example:
 
 ```bash

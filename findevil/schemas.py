@@ -21,6 +21,7 @@ class CaseRequest:
     remote_workdir: str | None = None
     remote_disk_path: str | None = None
     remote_identity_file: str | None = None
+    remote_insecure_no_host_key_check: bool = False
     remote_python: str = "python3"
     remote_timeout_sec: int = 120
 
