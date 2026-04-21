@@ -16,6 +16,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [ ] Real Windows case data selected and documented.
 - [ ] End-to-end real case run completed with evidence-linked findings.
 - [ ] Demo, README, accuracy report, architecture diagram, and Devpost write-up completed.
+- [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
 
 ## Done
 
@@ -39,6 +40,8 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Added hardened SIFT guest installer wrapper.
 - [x] Added apt safeguards to block accidental Ubuntu `noble` package selection on Jammy.
 - [x] Verified the earlier package contamination root cause.
+- [x] Initialized local Git repository on `main`.
+- [x] Pushed initial project commit to GitHub.
 
 ## In Progress
 
@@ -63,7 +66,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 ## CaseTrace Product Tasks
 
-- [ ] Add or verify `--remote-port 2222` support for the SSH SIFT backend.
+- [x] Add or verify `--remote-port 2222` support for the SSH SIFT backend.
 - [ ] Copy or sync the repo into the VM at `/home/sift/findevil`.
 - [ ] Run the bridge self-test against the VM.
 - [ ] Wire at least two fixture tools to real SIFT commands.
@@ -112,8 +115,8 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [ ] Add Devpost project story:
   What it does, how it was built, challenges, what was learned, and what is next.
 - [ ] Add open-source license confirmation.
-- [ ] Initialize Git repo if needed.
-- [ ] Push public GitHub repository.
+- [x] Initialize Git repo if needed.
+- [x] Push public GitHub repository.
 
 ## Demo Video Checklist
 
@@ -136,4 +139,3 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [ ] Show at least one blocked hallucination.
 - [ ] Show one clean end-to-end real case.
 - [ ] Keep judge setup simple and reproducible.
-
