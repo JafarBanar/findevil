@@ -8,6 +8,7 @@ CaseTrace is a read-only, self-correcting DFIR agent scaffold for the FIND EVIL!
 - `python3 -m findevil evaluate ...` compares iteration 1 against the self-corrected run and writes `evaluation.json`.
 - `python3 -m findevil analyze ... --tool-backend sift-ssh ...` can collect Windows timeline, Prefetch, Amcache, registry autoruns, scheduled tasks, browser history, user logons, and YARA-style hits from a remote x86 SIFT box over SSH.
 - A sample Windows persistence case is included under [sample_cases/windows_persistence_case](./sample_cases/windows_persistence_case).
+- A no-Windows raw NTFS image demo is included under [cases/realistic-windows-image](./cases/realistic-windows-image).
 - Every tool returns structured JSON and writes raw artifacts, `events.jsonl`, `tool_calls.jsonl`, `findings.json`, `run_metadata.json`, and `report.md`.
 
 ## Quick Start
@@ -54,7 +55,31 @@ Submission support docs:
 - [Dataset documentation](./docs/DATASETS.md)
 - [Accuracy report draft](./docs/ACCURACY_REPORT.md)
 - [Artifact-tree validation](./docs/ARTIFACT_TREE_VALIDATION.md)
+- [Generated NTFS image validation](./docs/NTFS_IMAGE_VALIDATION.md)
+- [Demo video script](./docs/DEMO_VIDEO_SCRIPT.md)
 - [Devpost story draft](./docs/DEVPOST_DRAFT.md)
+
+## No-Windows Image Demo
+If you do not have Windows, use the SIFT VM to generate a raw NTFS image from the controlled artifacts:
+
+```bash
+ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519 sift@127.0.0.1 \
+  'cd /home/sift/findevil && OVERWRITE=1 bash scripts/create_ntfs_image_from_artifact_tree.sh'
+
+rsync -a -e "ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519" \
+  sift@127.0.0.1:/home/sift/findevil/cases/realistic-windows-image/disk.img \
+  cases/realistic-windows-image/disk.img
+
+bash cases/realistic-windows-image/run_analysis.sh
+```
+
+The validated local run is `runs/realistic-windows-image`.
+
+Render the local draft demo video:
+
+```bash
+bash scripts/render_demo_video.sh
+```
 
 ## No-VM Development
 You do not need the SIFT VM to build most of this project.

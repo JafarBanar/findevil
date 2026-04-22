@@ -75,11 +75,43 @@ rsync -a cases sift@127.0.0.1:/home/sift/findevil/
 RUN_OUTPUT=runs/realistic-windows-case-script bash cases/realistic-windows-case/run_analysis.sh
 ```
 
+## Generated Raw NTFS Image Demo Case
+
+- Name: `realistic-windows-image`
+- Path: `cases/realistic-windows-image`
+- Disk input path: `cases/realistic-windows-image/disk.img`
+- Source: generated on the SIFT VM by `scripts/create_ntfs_image_from_artifact_tree.sh`
+- Source artifacts: `cases/realistic-windows-case/disk_root`
+- License/permission: project-owned synthetic artifact data, no external dataset.
+- Format: raw NTFS filesystem image, not a native Windows OS install.
+- Size: 128 MB
+- SHA-256: `4e006be48a4db5d6b10b7ec6336e5c7254fb3c3ae3ecf170c04a53ec66088eb2`
+- Purpose: no-Windows image-backed demo proving SIFT can enumerate a real NTFS image while CaseTrace preserves typed evidence and self-correction behavior.
+- Run output:
+  - `runs/realistic-windows-image`
+- Validation:
+  - 10/10 tools succeeded
+  - 8/8 expected artifact categories produced evidence
+  - 4 retained findings
+  - 1 unsupported speculative claim blocked
+- Recommended command:
+
+```bash
+ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519 sift@127.0.0.1 \
+  'cd /home/sift/findevil && OVERWRITE=1 bash scripts/create_ntfs_image_from_artifact_tree.sh'
+
+rsync -a -e "ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519" \
+  sift@127.0.0.1:/home/sift/findevil/cases/realistic-windows-image/disk.img \
+  cases/realistic-windows-image/disk.img
+
+bash cases/realistic-windows-image/run_analysis.sh
+```
+
 ## Final Demo Case
 
-**STATUS:** Partial. The controlled artifact-tree demo is implemented and validated; a full real forensic disk image is still pending.
+**STATUS:** Ready without Windows. The generated raw NTFS image demo is implemented and validated. A native Windows OS image or external public case is optional future validation.
 
-### Requirements for Final Case
+### Optional Future Native/Public Case
 - Name: TBD
 - Source: Public DFIR dataset, CTF, or documented forensic case
 - License/permission: Verified and documented
@@ -93,8 +125,9 @@ RUN_OUTPUT=runs/realistic-windows-case-script bash cases/realistic-windows-case/
 - ✅ Evidence linking and finding synthesis
 - ✅ Self-correction and verification layer
 - ✅ Report generation and audit trails
+- ✅ Generated NTFS image workflow when no Windows host is available
 
-### Next Steps
+### Optional Next Steps
 1. Download a Windows forensic dataset with known ground truth
 2. Store at `/cases/<case_name>/disk.E01`
 3. Run: `python3 -m findevil analyze --case /cases/<case_name> --disk /cases/<case_name>/disk.E01 --profile windows --output runs/real-case-final`

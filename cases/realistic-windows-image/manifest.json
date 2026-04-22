@@ -1,0 +1,53 @@
+{
+  "analyst": "CaseTrace Demo",
+  "case_id": "realistic-windows-image",
+  "created": "2026-04-22",
+  "expected_artifacts": [
+    "timeline_mft",
+    "registry_autoruns",
+    "scheduled_tasks",
+    "prefetch_summary",
+    "amcache_summary",
+    "browser_history",
+    "user_logons",
+    "yara_scan"
+  ],
+  "format": "raw_ntfs_image_generated_from_controlled_artifacts",
+  "image_path": "cases/realistic-windows-image/disk.img",
+  "notes": "No Windows host was available. This case is a real raw NTFS image generated on the SIFT VM from the controlled artifact tree. It validates image-based parsing and evidence linking, but it is not a native Windows OS install image.",
+  "planted_artifacts": [
+    {
+      "name": "PowerShell script",
+      "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1"
+    },
+    {
+      "name": "Scheduled task",
+      "path": "C:\\Windows\\System32\\Tasks\\ThemeUpdater"
+    },
+    {
+      "name": "Registry autorun export",
+      "path": "C:\\Users\\Analyst\\NTUSER_autoruns.reg"
+    },
+    {
+      "name": "Browser history",
+      "path": "C:\\Users\\Analyst\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\History"
+    },
+    {
+      "name": "Prefetch marker",
+      "path": "C:\\Windows\\Prefetch\\POWERSHELL.EXE-12345678.pf"
+    },
+    {
+      "name": "Amcache text export",
+      "path": "C:\\Windows\\AppCompat\\Programs\\Amcache.txt"
+    },
+    {
+      "name": "Security logon XML",
+      "path": "C:\\Windows\\System32\\winevt\\Logs\\Security.xml"
+    },
+    {
+      "name": "Downloaded file",
+      "path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip"
+    }
+  ],
+  "source": "Controlled artifact-tree demo copied into raw NTFS by scripts/create_ntfs_image_from_artifact_tree.sh"
+}

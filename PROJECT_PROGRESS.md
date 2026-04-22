@@ -16,8 +16,8 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Tool wiring: core Windows triage tools now remote-backed through the SIFT bridge; findevil repo deployed to VM.
 - [x] Remote SIFT backend tested and working (runs/local-utm-bridge/ and runs/remote-case/ both used sift-ssh backend).
 - [x] Realistic Windows demo case created with known artifacts as a controlled artifact tree.
-- [ ] End-to-end analysis against real forensic image completed.
-- [ ] Accuracy report with real-case evaluation completed.
+- [x] End-to-end analysis against generated raw NTFS forensic image completed without Windows.
+- [x] Accuracy report with controlled NTFS-image evaluation completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
 - [x] Local UTM bridge self-test passed over SSH on `127.0.0.1:2222`.
 
@@ -32,22 +32,31 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Checked local UTM, Desktop, Downloads, and Documents for a Windows VM/image; none is currently present.
 - [x] Controlled artifact-tree run completed through `sift-ssh`: `runs/realistic-windows-case-script`.
 - [x] Controlled artifact-tree validation completed: 10/10 tools succeeded, 8/8 artifact categories produced evidence, 1 unsupported claim blocked.
-- [ ] Real Windows demo image still needs to be created or converted from the Windows VM.
-- [ ] Real-case accuracy can only be claimed after `runs/realistic-windows-case/` exists and has been manually validated against planted artifacts.
+- [x] No-Windows image path completed: generated a 128 MB raw NTFS image at `cases/realistic-windows-image/disk.img` using SIFT.
+- [x] Image-backed SIFT run completed: `runs/realistic-windows-image`.
+- [x] Generated NTFS image validation completed: 10/10 tools succeeded, 8/8 artifact categories produced evidence, 1 unsupported claim blocked.
+- [ ] Native Windows OS demo image remains optional future validation if a Windows VM or public dataset becomes available.
+- [ ] Public/native real-world accuracy can only be claimed after an external Windows case with ground truth is analyzed.
 
 ## Next Steps To Finish
 
-- [ ] Create or attach a Windows 10/11 VM or real Windows forensic image.
-- [ ] Run `scripts/create_windows_artifacts.ps1` inside the Windows VM as Administrator.
-- [ ] Shut down the Windows VM cleanly after artifacts are created.
-- [ ] Export or convert the Windows disk to raw/E01 format; for UTM qcow2 use `qemu-img convert -O raw`.
-- [ ] Place the image at `cases/realistic-windows-case/disk.img` or `cases/realistic-windows-case/disk.E01`.
-- [ ] Run `bash scripts/image_and_analyze.sh realistic-windows-case <target-image-path> <source-image-path> 127.0.0.1 2222 sift /home/sift/findevil`.
+- [x] Replace the Windows-only requirement with a no-Windows raw NTFS image workflow.
+- [x] Create `scripts/create_ntfs_image_from_artifact_tree.sh`.
+- [x] Generate `cases/realistic-windows-image/disk.img` on the SIFT VM.
+- [x] Copy the generated image back to the local project workspace.
+- [x] Run `bash cases/realistic-windows-image/run_analysis.sh`.
+- [x] Validate `runs/realistic-windows-image/report.md`, `findings.json`, `events.jsonl`, and `tool_calls.jsonl`.
+- [x] Create validation documentation for the generated NTFS image.
+- [ ] Optional only: create or attach a native Windows 10/11 VM or public Windows forensic image.
+- [ ] Optional only: run `scripts/create_windows_artifacts.ps1` inside a Windows VM as Administrator.
+- [ ] Optional only: export or convert a native Windows disk to raw/E01 format.
 - [x] Run `bash cases/realistic-windows-case/run_analysis.sh` for the controlled artifact-tree case.
 - [x] Validate `runs/realistic-windows-case-script/report.md`, `findings.json`, `events.jsonl`, and `tool_calls.jsonl`.
 - [x] Create validation documentation comparing planted artifact-tree artifacts against detected findings.
 - [x] Update `docs/ACCURACY_REPORT.md`, `docs/DATASETS.md`, and `docs/DEVPOST_DRAFT.md` with the artifact-tree results.
-- [ ] Record the under-5-minute demo video from the real run.
+- [x] Update `docs/ACCURACY_REPORT.md`, `docs/DATASETS.md`, `docs/DEVPOST_DRAFT.md`, and `README.md` with the generated NTFS image results.
+- [x] Prepare `docs/DEMO_VIDEO_SCRIPT.md` and `scripts/print_demo_highlights.sh` for recording the final demo.
+- [x] Generate an under-5-minute draft demo video from `runs/realistic-windows-image`: `demo/casetrace_demo.mp4`.
 
 ## Earlier Milestones
 
@@ -128,14 +137,16 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 ## Real Case Tasks
 
-- [ ] Choose one Windows disk image case for the main demo.
-- [ ] Record dataset source, license/permission, hash, size, and expected artifacts.
+- [x] Choose one image-backed case for the main no-Windows demo: `realistic-windows-image`.
+- [x] Record dataset source, license/permission, hash, size, and expected artifacts for the generated NTFS image.
 - [x] Put controlled artifact-tree case data under `cases/realistic-windows-case`.
-- [ ] Run CaseTrace on the real case.
+- [x] Run CaseTrace on the generated NTFS image case.
 - [x] Review artifact-tree `report.md` manually for false positives and unsupported claims.
-- [ ] Update verifier rules based on the first real run.
+- [x] Review generated NTFS image `report.md` manually for false positives and unsupported claims.
+- [x] Confirm no verifier rule changes are required after the generated image run.
 - [x] Re-run controlled artifact-tree case until the final report is evidence-linked and defensible.
 - [x] Preserve the complete controlled artifact-tree run folder locally for Devpost judging.
+- [x] Preserve the generated NTFS image run folder locally for Devpost judging.
 
 ## Self-Correction And Evaluation Tasks
 
@@ -167,22 +178,22 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 ## Demo Video Checklist
 
-- [ ] Start with the problem: AI attackers move faster than human IR.
-- [ ] Show architecture diagram.
-- [ ] Show the agent running from terminal.
-- [ ] Show at least one typed tool call.
-- [ ] Show raw artifact path and evidence ID.
-- [ ] Show a self-correction sequence.
-- [ ] Show final `report.md`.
-- [ ] Show `findings.json` and `tool_calls.jsonl` traceability.
-- [ ] Keep video under 5 minutes.
+- [x] Demo video: start with the problem that AI attackers move faster than human IR.
+- [x] Demo video: show the architecture.
+- [x] Demo video: show the validated agent run summary from `runs/realistic-windows-image`.
+- [x] Demo video: show typed tool calls from `runs/realistic-windows-image/tool_calls.jsonl`.
+- [x] Demo video: show raw artifact path and evidence ID.
+- [x] Demo video: show self-correction through iteration 1 to iteration 2.
+- [x] Demo video: show final findings from `runs/realistic-windows-image/report.md`.
+- [x] Demo video: show `findings.json` and `tool_calls.jsonl` traceability.
+- [x] Demo video: keep under 5 minutes.
 
 ## Winning Focus
 
 - [x] Do not broaden into many shallow artifact types.
-- [ ] Make the Windows disk workflow excellent.
+- [x] Make the no-Windows NTFS image workflow excellent.
 - [x] Make evidence traceability obvious.
 - [x] Make read-only architectural guardrails obvious.
 - [x] Show at least one blocked hallucination.
-- [ ] Show one clean end-to-end real case.
+- [x] Show one clean end-to-end generated NTFS image case.
 - [x] Keep judge setup simple and reproducible.

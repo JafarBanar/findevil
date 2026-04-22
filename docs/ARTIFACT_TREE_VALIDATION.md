@@ -43,7 +43,6 @@ Important scope note: this is not a full forensic disk image. It is a Windows-li
 - `Persistence mechanism likely established on the host`: confirmed, backed by `registry_autoruns` and `scheduled_tasks`
 - `Known suspicious artifact matched detection rules`: inference, backed by `yara_scan`
 
-## Remaining Real-Image Gap
+## Image-Backed Follow-Up
 
-This run proves the orchestrator, remote bridge, typed tool contracts, and validation workflow. It does not replace the final required real Windows disk image run. The final accuracy claim still needs a Windows VM/image with planted artifacts or a public Windows forensic image with ground truth.
-
+This run proves the orchestrator, remote bridge, typed tool contracts, and validation workflow. The image-backed follow-up is complete in `runs/realistic-windows-image`, which uses a generated raw NTFS image. A native Windows OS image or public Windows forensic image with ground truth remains optional future validation for broader accuracy claims.

@@ -221,13 +221,19 @@ Example:
 ✅ **Fast demo** - no multi-GB downloads, no external dependencies  
 ✅ **Complete chain** - attack chain → forensic artifacts → CaseTrace findings  
 
-## Fallback: Hybrid Approach (If Windows VM Unavailable)
+## No-Windows Path
 
-If you can't easily boot Windows:
-1. Keep existing fixture data
-2. Create REAL Windows MFT file (can generate minimal $MFT)
-3. Create REAL Windows registry hives (can extract from public ISO)
-4. Parse real files with analyzemft/regripper
-5. Document that "real tool execution, real artifact parsing, fixture event data"
+If you cannot boot Windows, use the implemented generated NTFS image path:
 
-This still proves real tool backend works without needing full Windows image.
+```bash
+ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519 sift@127.0.0.1 \
+  'cd /home/sift/findevil && OVERWRITE=1 bash scripts/create_ntfs_image_from_artifact_tree.sh'
+
+rsync -a -e "ssh -p 2222 -i vm_assets/ssh/sift_vm_ed25519" \
+  sift@127.0.0.1:/home/sift/findevil/cases/realistic-windows-image/disk.img \
+  cases/realistic-windows-image/disk.img
+
+bash cases/realistic-windows-image/run_analysis.sh
+```
+
+This produces a real raw NTFS image and proves image-backed SIFT tool execution without a native Windows OS install. See `docs/NTFS_IMAGE_VALIDATION.md`.

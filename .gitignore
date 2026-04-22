@@ -18,3 +18,7 @@ vm_assets/
 *.iso
 *.qcow2
 *.utm
+demo/*.mp4
+demo/*.mov
+demo/*.aiff
+demo/*.wav

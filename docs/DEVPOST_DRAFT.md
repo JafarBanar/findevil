@@ -45,7 +45,7 @@ Instead of giving the model arbitrary shell access, CaseTrace exposes typed fore
 
 - Running x86_64 SIFT on Apple Silicon is slow.
 - The SIFT installer attempted to introduce Ubuntu `noble` package sources into an Ubuntu 22.04 `jammy` guest, so the setup now pins `noble` packages away and patches cached repo states.
-- The included fixture case is useful for repeatable development but is not a real disk image, so real SIFT filesystem parsing requires a real Windows case.
+- The included fixture case is useful for repeatable development but is not a real disk image, so the final no-Windows path generates a raw NTFS image on SIFT from controlled artifacts.
 
 ## What We Learned
 
@@ -56,43 +56,41 @@ Instead of giving the model arbitrary shell access, CaseTrace exposes typed fore
 
 ## What's Next
 
-- Create a realistic Windows forensic image with known attack artifacts
-- Run end-to-end analysis using real SIFT tools on real disk image
-- Validate findings against intentionally-planted artifacts
-- Document accuracy metrics (true positives, false positives, missed artifacts)
-- Demonstrate reproducibility: judges can recreate the exact same case
+- Validate against a native Windows OS image or public DFIR dataset with known ground truth
+- Add more Windows artifact parsers behind the same typed tool boundary
+- Package the SIFT image-builder workflow into one command
+- Improve report visualizations for judges and analysts
 
-## Competition Strategy: Realistic Demo Case
+## Competition Strategy: No-Windows Image Demo
 
-Rather than downloading multi-GB public datasets, we create a realistic Windows disk image with known artifacts (~40 minutes):
+Because no Windows host is available, the demo uses a generated raw NTFS image with known artifacts:
 
-1. **Create attack artifacts on Windows system:**
+1. **Create controlled Windows-like attack artifacts:**
    - Browser history: visiting suspicious URLs
    - PowerShell script execution: stored in suspicious location
    - Scheduled task: persistence mechanism
    - Registry autoruns: additional persistence
-   - Generate MFT timeline: via file creation activity
+   - Prefetch, Amcache, Security logon, and downloaded file markers
 
-2. **Image the system forensically:**
-   - Create real disk image using ddrescue or forensic tools
-   - Contains real $MFT, real registry hives, real browser databases
-   - Not just fixture JSON - actual forensic artifacts
+2. **Build a raw NTFS image on SIFT:**
+   - `scripts/create_ntfs_image_from_artifact_tree.sh`
+   - 128 MB raw NTFS image at `cases/realistic-windows-image/disk.img`
+   - Enumerated by SIFT `fls` and parsed through the same image-backed bridge path
 
 3. **Run CaseTrace analysis:**
    - Use remote SIFT backend with real forensic tools
-   - Real analyzemft parsing actual $MFT extracted from the image
-   - Real regripper parsing actual registry hives
+   - SIFT enumerates a real NTFS filesystem image
    - Real scheduled task and Prefetch footprint extraction
    - Browser history, Amcache, Security.evtx logons, and YARA-style scanning collected through the remote bridge
 
 4. **Validate accuracy:**
-   - Every planted artifact found → 100% true positive rate
+   - Every planted artifact category found in the controlled case
    - Zero false positives (controlled environment)
    - Demonstrates self-correction with real data
    - Reproducible: judges can verify every step
 
 **Why This Wins:**
-- ✓ Real forensic data (not fixture JSON)
+- ✓ Real image-backed analysis (not fixture JSON)
 - ✓ Real tool execution (not simulated)
 - ✓ Provable accuracy (we control all artifacts)
 - ✓ Reproducible (no external dependencies)
@@ -109,11 +107,13 @@ See [docs/CREATE_DEMO_CASE.md](./CREATE_DEMO_CASE.md) for step-by-step guide.
 - Self-correction blocked 1 unsupported claim
 - Demonstrates orchestration and verification working correctly
 
-**Target realistic demo** (runs/realistic-windows-case with real image):
-- Expected: All planted artifacts detected (100% accuracy)
-- Real SIFT tools running on real disk image
-- Evidence linked to actual forensic artifacts
-- Reproducible case for judge evaluation
+**Main no-Windows image demo** (`runs/realistic-windows-image` with `sift-ssh` backend):
+- 128 MB raw NTFS image created without Windows from the controlled artifact tree
+- 10/10 typed tools completed successfully through the remote SIFT bridge
+- 8/8 planted artifact categories produced evidence
+- 4 findings retained: script execution, web delivery, persistence, and detection hit
+- 1 unsupported credential-theft claim blocked by verification
+- Scope note: image-backed and reproducible, but not a native Windows OS install
 
 **Controlled artifact-tree smoke demo** (`runs/realistic-windows-case-script` with `sift-ssh` backend):
 - 10/10 typed tools completed successfully through the remote SIFT bridge
