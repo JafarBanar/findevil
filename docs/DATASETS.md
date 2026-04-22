@@ -41,48 +41,32 @@ python3 -m findevil analyze \
 
 ## Final Demo Case
 
-- Name: `windows_persistence_case` (Fixture-Enhanced)
-- Source: Synthetic SIFT forensic fixture with real tool backend execution
-- License/permission: Project-internal testing fixture
-- Local path: `sample_cases/windows_persistence_case`
-- Disk image path: `sample_cases/windows_persistence_case/image.E01` (marker file)
-- SHA256: N/A (fixture)
-- Size: 104 bytes (fixture marker)
-- Known ground truth: 
-  - Suspicious PowerShell script execution (amcache + prefetch)
-  - Web delivery of payload (browser history + MFT timeline)
-  - Persistence via autorun and scheduled task (registry + scheduled tasks)
-  - YARA detection match (Suspicious_PowerShell_Downloader)
-  - Self-correction: blocks speculative credential theft claim (no evidence)
-- Expected artifacts:
-  - `amcache_summary`: ✅ execution evidence
-  - `browser_history`: ✅ web delivery evidence
-  - `prefetch_summary`: ✅ execution summary
-  - `registry_autoruns`: ✅ persistence mechanism
-  - `scheduled_tasks`: ✅ task persistence
-  - `timeline_mft`: ✅ on-disk artifact timeline
-  - `user_logons`: ✅ logon evidence
-  - `yara_scan`: ✅ signature match
-- CaseTrace run folder: `runs/demo-real-case-run`
-- Analysis results:
-  - Iterations: 2
-  - Findings: 4 (1 high severity confirmed, 1 high severity inference, 1 medium severity confirmed, 1 high severity inference)
-  - Tool coverage: 10/10 tools successful
-  - Self-correction: 1 blocked unsupported claim (credential theft without evidence)
-  - Command:
-    ```bash
-    python3 -m findevil analyze \
-      --case sample_cases/windows_persistence_case \
-      --disk sample_cases/windows_persistence_case/image.E01 \
-      --profile windows \
-      --max-iterations 3 \
-      --output runs/demo-real-case-run \
-      --remote-host 127.0.0.1 \
-      --remote-port 2222 \
-      --remote-user sift \
-      --remote-identity-file vm_assets/ssh/sift_vm_ed25519
-    ```
-- Notes:
-  - Demo case uses fixture data but executes real SIFT tools via SSH bridge (127.0.0.1:2222).
-  - Demonstrates: orchestration, evidence linking, bounded iteration, self-correction, unsupported claim verification.
-  - Real Windows cases can be substituted following the same command pattern.
+**STATUS:** ❌ NOT YET IMPLEMENTED - Awaiting Real Forensic Image
+
+### Requirements for Final Case
+- Name: TBD
+- Source: Public DFIR dataset, CTF, or documented forensic case
+- License/permission: Verified and documented
+- Format: Windows disk image (.E01, .dd, .raw, or equivalent)
+- Size: Preferably < 1GB for development speed
+- Ground truth: Known artifacts, attack chains, or expected findings documented
+
+### What We Have Ready
+- ✅ Code infrastructure to analyze real cases
+- ✅ Tool backend selection (fixture or remote SIFT)
+- ✅ Evidence linking and finding synthesis
+- ✅ Self-correction and verification layer
+- ✅ Report generation and audit trails
+
+### Next Steps
+1. Download a Windows forensic dataset with known ground truth
+2. Store at `/cases/<case_name>/disk.E01`
+3. Run: `python3 -m findevil analyze --case /cases/<case_name> --disk /cases/<case_name>/disk.E01 --profile windows --output runs/real-case-final`
+4. Document findings against known artifacts
+5. Update ACCURACY_REPORT.md with evaluation results
+
+### Example Public Sources
+- DFIR CTF (if available)
+- Digital Forensics Research Lab datasets
+- Classroom DFIR scenarios with published solutions
+- Public incident response reports with IOCs

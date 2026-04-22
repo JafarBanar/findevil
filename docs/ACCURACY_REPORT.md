@@ -8,8 +8,9 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 | --- | --- | --- | --- |
 | `runs/windows-persistence-case` | fixture case | fixture | Completed; evidence-linked findings generated. |
 | `runs/windows-persistence-eval` | fixture case | fixture | Completed; iteration comparison available in `evaluation.json`. |
-| `runs/local-utm-bridge` | fixture case | local UTM SIFT bridge | Completed; remote bridge worked, real filesystem tools degraded cleanly because the fixture image is not a real disk image. |
-| `runs/demo-real-case-run` | fixture case | remote SIFT VM (127.0.0.1:2222) SSH backend | Completed; 4 findings generated across 2 iterations; all 10 tools contributed evidence; self-correction blocked 1 unsupported credential-theft claim. |
+| `runs/local-utm-bridge` | fixture case | remote SIFT VM (sift-ssh) | Completed; remote backend works, fails gracefully on fixture image ("Cannot determine file system type"). |
+| `runs/demo-real-case-run` | fixture case | fixture | Completed; 4 findings from fixture data across 2 iterations; **NOT a real case analysis**. |
+| `runs/remote-case` | fixture case | remote SIFT VM (sift-ssh) | Completed; remote backend execution confirmed. |
 
 ## Confirmed Strengths
 
@@ -32,6 +33,27 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 
 - Not yet measured on a real Windows case.
 - Real SIFT-backed filesystem tools need a real disk image before depth can be evaluated.
+
+## What's Actually Complete vs. What Remains
+
+**COMPLETED:**
+- ✓ Infrastructure: bounded orchestrator, verification layer, evidence linking
+- ✓ Local fixture backend: 100% working
+- ✓ Remote SIFT SSH backend: 100% working (tested in runs/local-utm-bridge, runs/remote-case)
+- ✓ Tool bridge deployment: real SIFT tools wired to real commands
+- ✓ Self-correction behavior: blocks unsupported claims (demonstrated on fixture)
+
+**INCOMPLETE:**
+- ✗ Real Windows case analysis: no actual forensic case data has been analyzed yet
+- ✗ Accuracy measurement: claims about true positive rate, false positive rate, and missed artifacts cannot be made without a real case
+- ✗ Findings credibility: all findings in current runs are based on synthetic fixture data
+
+**TO COMPLETE THE SUBMISSION:**
+1. Obtain a real Windows forensic disk image (public DFIR dataset, CTF, etc.)
+2. Run: `python3 -m findevil analyze --case <name> --disk <image.E01> --profile windows --output runs/real-case-analysis [--tool-backend sift-ssh --remote-host ...]`
+3. Review findings against known ground truth
+4. Document false positives, misses, and accuracy metrics
+5. Update ACCURACY_REPORT.md with real evaluation results
 
 ## Blocked Hallucinations
 
