@@ -136,8 +136,12 @@ sudo mmls windows_demo.img
 # Extract MFT to verify it's real:
 sudo fls -r windows_demo.img | head -20
 
-# Check $MFT is parseable by analyzemft:
-sudo analyzemft -f windows_demo.img -o json | head -20
+# For partitioned images, get the Windows partition offset:
+sudo mmls windows_demo.img
+
+# CaseTrace extracts $MFT from the image and runs analyzemft on the extracted file.
+# If you manually inspect with fls, pass the NTFS start sector from mmls:
+sudo fls -o [partition-start-sector-from-mmls] windows_demo.img | head -20
 ```
 
 ## Phase 5: Run CaseTrace Analysis (5 min)
@@ -158,16 +162,17 @@ python3 -m findevil analyze \
   --remote-host 127.0.0.1 \
   --remote-port 2222 \
   --remote-user sift \
+  --remote-workdir /home/sift/findevil \
   --remote-identity-file vm_assets/ssh/sift_vm_ed25519
 ```
 
 ## Phase 6: Validate Findings (5 min)
 
-Expected CaseTrace findings:
-- ✓ Suspicious PowerShell script execution (amcache, prefetch)
-- ✓ Browser delivery of payload (browser history, MFT timeline)  
+Expected CaseTrace findings with the current real-backed SIFT bridge:
+- ✓ Suspicious PowerShell script execution (Amcache, Prefetch, YARA-style scan)
+- ✓ Browser delivery of payload (browser history, MFT timeline)
 - ✓ Persistence mechanisms (registry autoruns, scheduled tasks)
-- ✓ Multiple PowerShell executions logged in amcache
+- ✓ User context from Security event logons when `Security.evtx` is present
 
 Compare findings to what we intentionally created:
 ```bash
@@ -189,16 +194,16 @@ Example:
 ## Realistic Demo Case - Artifacts & Findings
 
 ### Artifacts Created
-1. Browser history: https://cdn-login-check.example/invoice_update.zip
-2. PowerShell script: C:\Users\Analyst\AppData\Roaming\Microsoft\Windows\Themes\update.ps1
-3. Scheduled task: ThemeUpdater
-4. Registry entry: HKCU\...\Run\ThemeUpdater
-5. Downloaded file: C:\Users\Analyst\Downloads\invoice_update.zip
+1. PowerShell script: C:\Users\Analyst\AppData\Roaming\Microsoft\Windows\Themes\update.ps1
+2. Scheduled task: ThemeUpdater
+3. Registry entry: HKCU\...\Run\ThemeUpdater
+4. Downloaded file: C:\Users\Analyst\Downloads\invoice_update.zip
+5. Browser history: https://cdn-login-check.example/invoice_update.zip
 
 ### CaseTrace Findings
-1. ✓ Web delivery detected (browser_history tool)
-2. ✓ Suspicious execution detected (amcache_summary tool)
-3. ✓ Persistence detected (registry_autoruns, scheduled_tasks tools)
+1. ✓ Web delivery detected (browser_history / timeline_mft tools)
+2. ✓ Suspicious execution detected (amcache_summary / prefetch_summary / yara_scan tools)
+3. ✓ Persistence detected (registry_autoruns / scheduled_tasks tools)
 4. ✓ Evidence linked to raw artifacts
 
 ### Accuracy

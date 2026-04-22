@@ -6,7 +6,7 @@ CaseTrace is a read-only, self-correcting DFIR agent scaffold for the FIND EVIL!
 - `python3 -m findevil analyze ...` runs a bounded triage loop with phases for planning, collection, synthesis, verification, self-correction, and finalization.
 - `python3 -m findevil mcp-server ...` exposes typed, read-only tools over MCP stdio.
 - `python3 -m findevil evaluate ...` compares iteration 1 against the self-corrected run and writes `evaluation.json`.
-- `python3 -m findevil analyze ... --tool-backend sift-ssh ...` can collect `timeline_mft` and `prefetch_summary` from a remote x86 SIFT box over SSH.
+- `python3 -m findevil analyze ... --tool-backend sift-ssh ...` can collect Windows timeline, Prefetch, Amcache, registry autoruns, scheduled tasks, browser history, user logons, and YARA-style hits from a remote x86 SIFT box over SSH.
 - A sample Windows persistence case is included under [sample_cases/windows_persistence_case](./sample_cases/windows_persistence_case).
 - Every tool returns structured JSON and writes raw artifacts, `events.jsonl`, `tool_calls.jsonl`, `findings.json`, `run_metadata.json`, and `report.md`.
 
@@ -135,7 +135,7 @@ python3 -m findevil analyze \
   --remote-disk-path /cases/case1/image.E01
 ```
 
-That keeps the orchestration local while `timeline_mft`, `prefetch_summary`, `registry_autoruns`, and `scheduled_tasks` are collected on the remote host.
+That keeps the orchestration local while the core Windows triage tools are collected on the remote host.
 
 Details: [docs/REMOTE_SIFT.md](./docs/REMOTE_SIFT.md)
 

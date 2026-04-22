@@ -11,10 +11,14 @@ from .schemas import CaseRequest
 
 
 REMOTE_SUPPORTED_TOOLS = {
+    "amcache_summary",
+    "browser_history",
     "timeline_mft",
     "prefetch_summary",
     "registry_autoruns",
     "scheduled_tasks",
+    "user_logons",
+    "yara_scan",
 }
 PLACEHOLDER_HOSTS = {"your-sift-host"}
 
@@ -66,13 +70,16 @@ class RemoteSIFTRunner:
 
         command = self._build_command(tool_name)
         start = time.perf_counter()
-        completed = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=self.request.remote_timeout_sec,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=self.request.remote_timeout_sec,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            return self._timeout_result(tool_name, command, start, exc)
         duration_ms = int((time.perf_counter() - start) * 1000)
         payload = self._parse_payload(tool_name, completed.stdout, completed.stderr, completed.returncode, duration_ms)
         return RemoteExecutionResult(
@@ -101,13 +108,16 @@ class RemoteSIFTRunner:
 
         command = self._build_self_test_command()
         start = time.perf_counter()
-        completed = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=self.request.remote_timeout_sec,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=self.request.remote_timeout_sec,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            return self._timeout_result("self_test", command, start, exc)
         duration_ms = int((time.perf_counter() - start) * 1000)
         payload = self._parse_payload("self_test", completed.stdout, completed.stderr, completed.returncode, duration_ms)
         return RemoteExecutionResult(
@@ -119,6 +129,40 @@ class RemoteSIFTRunner:
             duration_ms=duration_ms,
             payload=payload,
         )
+
+    def _timeout_result(
+        self,
+        tool_name: str,
+        command: list[str],
+        start: float,
+        exc: subprocess.TimeoutExpired,
+    ) -> RemoteExecutionResult:
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        stdout = self._decode_timeout_stream(exc.stdout)
+        stderr = self._decode_timeout_stream(exc.stderr)
+        message = f"Remote command timed out after {self.request.remote_timeout_sec} seconds."
+        return RemoteExecutionResult(
+            tool_name=tool_name,
+            command=command,
+            exit_code=124,
+            stdout=stdout,
+            stderr=stderr or message,
+            duration_ms=duration_ms,
+            payload={
+                "tool_name": tool_name,
+                "records": [],
+                "errors": [message],
+                "remote_mode": "sift_ssh",
+                "duration_ms": duration_ms,
+            },
+        )
+
+    def _decode_timeout_stream(self, value: str | bytes | None) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, bytes):
+            return value.decode("utf-8", errors="ignore")
+        return value
 
     def _build_command(self, tool_name: str) -> list[str]:
         target = self.request.remote_host
@@ -153,7 +197,7 @@ class RemoteSIFTRunner:
         return command
 
     def _base_ssh_command(self) -> list[str]:
-        command = ["ssh", "-p", str(self.request.remote_port)]
+        command = ["ssh", "-p", str(self.request.remote_port), "-o", "BatchMode=yes"]
         if self.request.remote_identity_file:
             command.extend(["-i", self.request.remote_identity_file])
         if self.request.remote_insecure_no_host_key_check:

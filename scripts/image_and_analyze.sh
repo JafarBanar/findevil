@@ -9,11 +9,12 @@ set -e
 
 # Configuration
 CASE_NAME="${1:-realistic-windows-case}"
-IMAGE_PATH="${2:-./$CASE_NAME/disk.E01}"
+IMAGE_PATH="${2:-cases/$CASE_NAME/disk.E01}"
 DISK_SOURCE="${3:-/dev/sda}"  # Path to Windows disk or image source
 VM_HOST="${4:-127.0.0.1}"
 VM_PORT="${5:-2222}"
 VM_USER="${6:-sift}"
+REMOTE_WORKDIR="${7:-/home/sift/findevil}"
 
 echo "=========================================="
 echo "CaseTrace Demo: Forensic Imaging & Analysis"
@@ -21,6 +22,7 @@ echo "=========================================="
 echo "Case Name: $CASE_NAME"
 echo "Target Image: $IMAGE_PATH"
 echo "Disk Source: $DISK_SOURCE"
+echo "Remote Workdir: $REMOTE_WORKDIR"
 echo ""
 
 # Phase 1: Validate prerequisites
@@ -41,6 +43,7 @@ echo "✓ SIFT tools available"
 echo ""
 echo "[PHASE 2] Creating case directory..."
 mkdir -p "cases/$CASE_NAME/raw"
+mkdir -p "$(dirname "$IMAGE_PATH")"
 echo "✓ Created: cases/$CASE_NAME/"
 
 # Phase 3: Handle image source
@@ -49,7 +52,11 @@ echo "[PHASE 3] Preparing forensic image..."
 
 if [ -f "$DISK_SOURCE" ]; then
     echo "✓ Found existing image at $DISK_SOURCE"
-    cp "$DISK_SOURCE" "$IMAGE_PATH"
+    if [ "$(realpath "$DISK_SOURCE")" != "$(realpath "$IMAGE_PATH" 2>/dev/null || echo "$IMAGE_PATH")" ]; then
+        cp "$DISK_SOURCE" "$IMAGE_PATH"
+    else
+        echo "  Source image is already at target path"
+    fi
 elif [ -b "$DISK_SOURCE" ]; then
     echo "Creating forensic image from block device: $DISK_SOURCE"
     echo "  (This requires write access to $DISK_SOURCE)"
@@ -58,11 +65,11 @@ elif [ -b "$DISK_SOURCE" ]; then
         exit 1
     fi
 else
-    echo "⚠ Image source not found: $DISK_SOURCE"
-    echo "  Create image manually and place at: $IMAGE_PATH"
-    echo "  Proceeding with placeholder..."
-    mkdir -p "$(dirname "$IMAGE_PATH")"
-    echo "Placeholder for forensic image" > "$IMAGE_PATH"
+    echo "✗ Image source not found: $DISK_SOURCE"
+    echo "  Create or convert a real Windows image and place it at: $IMAGE_PATH"
+    echo "  For UTM qcow2 disks, convert to raw first, for example:"
+    echo "  qemu-img convert -O raw Windows.qcow2 $IMAGE_PATH"
+    exit 1
 fi
 
 echo "✓ Image available at: $IMAGE_PATH"
@@ -71,9 +78,9 @@ echo "  Size: $(du -h "$IMAGE_PATH" | cut -f1)"
 # Phase 4: Create case manifest
 echo ""
 echo "[PHASE 4] Creating case manifest..."
-cat > "cases/$CASE_NAME/manifest.json" << 'EOF'
+cat > "cases/$CASE_NAME/manifest.json" << EOF
 {
-  "case_id": "realistic-windows-case",
+  "case_id": "$CASE_NAME",
   "analyst": "CaseTrace Demo",
   "created": "2026-04-22",
   "expected_artifacts": [
@@ -102,11 +109,11 @@ else
     echo "  ⚠ mmls check inconclusive (image may be raw or non-standard)"
 fi
 
-echo "  Running analyzemft..."
-if analyzemft -f "$IMAGE_PATH" -o json 2>/dev/null | head -3; then
-    echo "  ✓ analyzemft succeeded"
+echo "  Running fls..."
+if fls "$IMAGE_PATH" 2>/dev/null | head -10; then
+    echo "  ✓ fls succeeded directly"
 else
-    echo "  ⚠ analyzemft check inconclusive"
+    echo "  ⚠ direct fls check inconclusive; partitioned images may require offset detection in the SIFT bridge"
 fi
 
 # Phase 6: Create CaseTrace runner script
@@ -119,10 +126,11 @@ cat > "cases/$CASE_NAME/run_analysis.sh" << EOF
 set -e
 
 CASE_DIR="cases/$CASE_NAME"
-IMAGE_PATH="\$CASE_DIR/disk.E01"
+IMAGE_PATH="$IMAGE_PATH"
 VM_HOST="$VM_HOST"
 VM_PORT="$VM_PORT"
 VM_USER="$VM_USER"
+REMOTE_WORKDIR="$REMOTE_WORKDIR"
 IDENTITY_FILE="vm_assets/ssh/sift_vm_ed25519"
 
 echo "Running CaseTrace analysis..."
@@ -139,6 +147,7 @@ python3 -m findevil analyze \\
     --remote-host "\$VM_HOST" \\
     --remote-port "\$VM_PORT" \\
     --remote-user "\$VM_USER" \\
+    --remote-workdir "\$REMOTE_WORKDIR" \\
     --remote-identity-file "\$IDENTITY_FILE"
 
 echo ""
@@ -158,7 +167,7 @@ echo "=========================================="
 echo ""
 echo "Next Steps:"
 echo "1. Verify image accessibility:"
-echo "   mmls cases/$CASE_NAME/disk.E01"
+echo "   mmls $IMAGE_PATH"
 echo ""
 echo "2. Run CaseTrace analysis:"
 echo "   bash cases/$CASE_NAME/run_analysis.sh"

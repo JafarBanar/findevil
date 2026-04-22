@@ -15,6 +15,12 @@ Write-Host "CaseTrace Demo Artifact Creation Script" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Yellow
 Write-Host "$(Get-Date): Starting artifact creation..." -ForegroundColor Yellow
 
+$suspiciousUrls = @(
+    "https://cdn-delivery.example/invoice_update.zip",
+    "https://malware.example/backdoor.exe",
+    "https://attacker.example/c2-beacon"
+)
+
 # Phase 1: Create PowerShell Script (simulates web-delivered malware)
 Write-Host "`n[PHASE 1] Creating PowerShell script..." -ForegroundColor Cyan
 
@@ -104,18 +110,30 @@ foreach ($filePath in $mftTestFiles) {
     }
 }
 
-# Phase 6: Simulate browser history (create Chrome/Firefox databases with URLs)
-Write-Host "`n[PHASE 6] Simulating browser history..." -ForegroundColor Cyan
+# Phase 6: Create browser history by launching suspicious URLs
+Write-Host "`n[PHASE 6] Creating browser history..." -ForegroundColor Cyan
 
-# Chrome history file location (this would be parsed by real forensic tools)
-$chromeHistory = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\History"
+$browserCandidates = @(
+    "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+    "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
+    "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
+) | Where-Object { $_ -and (Test-Path $_) }
 
-# Note: Actual browser history is created by visiting URLs
-Write-Host "✓ Browser history will be created by normal browsing activity" -ForegroundColor Green
-Write-Host "  Suspicious URLs to visit:" -ForegroundColor Yellow
-Write-Host "    - https://cdn-delivery.example/invoice_update.zip" -ForegroundColor Yellow
-Write-Host "    - https://malware.example/backdoor.exe" -ForegroundColor Yellow
-Write-Host "    - https://attacker.example/c2-beacon" -ForegroundColor Yellow
+$browserPath = $browserCandidates | Select-Object -First 1
+foreach ($url in $suspiciousUrls) {
+    try {
+        if ($browserPath) {
+            Start-Process -FilePath $browserPath -ArgumentList $url -WindowStyle Minimized
+        } else {
+            Start-Process $url
+        }
+        Write-Host "✓ Launched browser URL: $url" -ForegroundColor Green
+        Start-Sleep -Seconds 1
+    } catch {
+        Write-Host "✗ Error launching browser URL ${url}: $_" -ForegroundColor Red
+    }
+}
 
 # Phase 7: Get artifact summary
 Write-Host "`n[PHASE 7] Artifact Summary..." -ForegroundColor Cyan
@@ -125,6 +143,7 @@ $artifacts = @{
     "Scheduled Task" = $null -ne (Get-ScheduledTask -TaskName "ThemeUpdater" -ErrorAction SilentlyContinue)
     "Registry Autorun" = $null -ne (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "ThemeUpdater" -ErrorAction SilentlyContinue)
     "MFT Timeline Files" = ($mftTestFiles | Where-Object { Test-Path $_ } | Measure-Object).Count
+    "Browser URL Launches" = $suspiciousUrls.Count
 }
 
 Write-Host "`nArtifacts Created:" -ForegroundColor Green

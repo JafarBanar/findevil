@@ -8,19 +8,26 @@ import argparse
 import json
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
 
 
 SUPPORTED_TOOLS = {
+    "amcache_summary",
+    "browser_history",
     "timeline_mft",
     "prefetch_summary",
     "registry_autoruns",
     "scheduled_tasks",
+    "user_logons",
+    "yara_scan",
 }
 SUSPICIOUS_SUFFIXES = (".ps1", ".js", ".hta", ".vbs", ".exe", ".zip")
 SUSPICIOUS_MARKERS = ("appdata", "downloads", "temp", "programdata")
+SUSPICIOUS_URL_MARKERS = ("invoice", "update", "login", "verify", "cdn-", ".zip", ".js", ".hta", ".ps1", "payload", "c2")
+MAX_SCAN_BYTES = 2 * 1024 * 1024
 
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -81,8 +88,38 @@ def parse_fls_line(line: str) -> dict[str, str | None] | None:
     return {"path": path, "address": address, "local_path": None}
 
 
-def enumerate_fls(image_path: Path) -> list[dict[str, str | None]]:
-    command = ["fls", "-r", "-p", str(image_path)]
+def detect_filesystem_offset(image_path: Path) -> str | None:
+    completed = run_command(["mmls", str(image_path)])
+    if completed.returncode != 0:
+        return None
+    for line in completed.stdout.splitlines():
+        parts = line.split()
+        if len(parts) < 5 or not parts[0].endswith(":"):
+            continue
+        if re.fullmatch(r"\d+", parts[1]):
+            start = parts[1]
+            description = " ".join(parts[4:])
+        elif len(parts) >= 6 and re.fullmatch(r"\d+", parts[2]):
+            start = parts[2]
+            description = " ".join(parts[5:])
+        else:
+            continue
+        lowered = description.lower()
+        if "unallocated" in lowered or "metadata" in lowered:
+            continue
+        if "ntfs" in lowered or "basic data" in lowered or "windows" in lowered:
+            return start
+    return None
+
+
+def enumerate_fls(image_path: Path) -> tuple[list[dict[str, str | None]], str]:
+    offset = detect_filesystem_offset(image_path)
+    command = ["fls", "-r", "-p"]
+    source_mode = "image_fls"
+    if offset:
+        command.extend(["-o", offset])
+        source_mode = "image_fls_offset"
+    command.append(str(image_path))
     completed = run_command(command)
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or "fls failed")
@@ -90,8 +127,9 @@ def enumerate_fls(image_path: Path) -> list[dict[str, str | None]]:
     for line in completed.stdout.splitlines():
         entry = parse_fls_line(line.strip())
         if entry is not None:
+            entry["offset"] = offset
             entries.append(entry)
-    return entries
+    return entries, source_mode
 
 
 def to_windowsish(path_text: str) -> str:
@@ -126,7 +164,7 @@ def prefetch_from_entries(entries: list[dict[str, str | None]]) -> list[dict[str
     return records
 
 
-def timeline_from_entries(entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+def timeline_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
     """Extract timeline from entries, preferring real analyzemft output when available."""
     records: list[dict[str, Any]] = []
     
@@ -135,9 +173,14 @@ def timeline_from_entries(entries: list[dict[str, str | None]]) -> list[dict[str
         path_text = entry_path(entry)
         lowered = path_text.lower()
         if "$mft" in lowered or path_text.endswith("$MFT"):
-            local_path = entry.get("local_path")
-            if local_path and Path(local_path).exists():
-                real_records = timeline_from_analyzemft(Path(local_path))
+            with tempfile.TemporaryDirectory() as temp_dir:
+                mft_path = Path(temp_dir) / "$MFT"
+                local_path = entry.get("local_path")
+                if local_path and Path(local_path).exists():
+                    mft_path = Path(local_path)
+                else:
+                    mft_path.write_bytes(read_entry_bytes(disk_path, entry))
+                real_records = timeline_from_analyzemft(mft_path)
                 if real_records:
                     records.extend(real_records)
                     return records  # Return real analyzemft results if available
@@ -166,11 +209,39 @@ def read_entry_bytes(disk_path: Path, entry: dict[str, str | None]) -> bytes:
     address = entry.get("address")
     if not address:
         raise RuntimeError(f"No address available for image entry {entry_path(entry)}.")
-    completed = run_command_bytes(["icat", str(disk_path), address])
+    command = ["icat"]
+    offset = entry.get("offset")
+    if offset:
+        command.extend(["-o", offset])
+    command.extend([str(disk_path), address])
+    completed = run_command_bytes(command)
     if completed.returncode != 0:
         stderr = completed.stderr.decode("utf-8", errors="ignore").strip()
         raise RuntimeError(stderr or f"icat failed for {entry_path(entry)}")
     return completed.stdout
+
+
+def copy_entry_to_temp(disk_path: Path, entry: dict[str, str | None], temp_root: Path, suffix: str = "") -> Path:
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", Path(entry_path(entry)).name or "artifact")
+    if suffix and not safe_name.lower().endswith(suffix.lower()):
+        safe_name = f"{safe_name}{suffix}"
+    target = temp_root / safe_name
+    target.write_bytes(read_entry_bytes(disk_path, entry))
+    return target
+
+
+def is_suspicious_path(path_text: str | None) -> bool:
+    if not path_text:
+        return False
+    lowered = path_text.lower()
+    return lowered.endswith(SUSPICIOUS_SUFFIXES) or any(marker in lowered for marker in SUSPICIOUS_MARKERS)
+
+
+def is_suspicious_url(url: str | None) -> bool:
+    if not url:
+        return False
+    lowered = url.lower()
+    return any(marker in lowered for marker in SUSPICIOUS_URL_MARKERS)
 
 
 def strip_namespace(tag: str) -> str:
@@ -232,6 +303,115 @@ def scheduled_tasks_from_entries(disk_path: Path, entries: list[dict[str, str | 
         if parsed is not None:
             records.append(parsed)
     return records
+
+
+def table_names(connection: sqlite3.Connection) -> set[str]:
+    rows = connection.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    return {str(row[0]).lower() for row in rows}
+
+
+def parse_chromium_history(history_db: Path, source_path: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    connection = sqlite3.connect(f"file:{history_db}?mode=ro", uri=True)
+    try:
+        connection.row_factory = sqlite3.Row
+        tables = table_names(connection)
+        if "urls" not in tables:
+            return records
+        for row in connection.execute(
+            "SELECT url, title, visit_count, last_visit_time FROM urls ORDER BY last_visit_time DESC LIMIT 500"
+        ):
+            url = str(row["url"] or "")
+            if not is_suspicious_url(url):
+                continue
+            records.append(
+                {
+                    "browser": "Chromium",
+                    "url": url,
+                    "title": row["title"],
+                    "visit_count": row["visit_count"],
+                    "last_visit_time": row["last_visit_time"],
+                    "source_path": to_windowsish(source_path),
+                    "kind": "browser_activity",
+                    "confidence": 0.78,
+                }
+            )
+        if "downloads" in tables:
+            for row in connection.execute("SELECT target_path, tab_url, start_time FROM downloads LIMIT 500"):
+                target_path = str(row["target_path"] or "")
+                tab_url = str(row["tab_url"] or "")
+                if not is_suspicious_path(target_path) and not is_suspicious_url(tab_url):
+                    continue
+                records.append(
+                    {
+                        "browser": "Chromium",
+                        "url": tab_url,
+                        "downloaded_path": target_path,
+                        "timestamp": row["start_time"],
+                        "source_path": to_windowsish(source_path),
+                        "kind": "browser_activity",
+                        "confidence": 0.82,
+                    }
+                )
+    except sqlite3.DatabaseError:
+        return records
+    finally:
+        connection.close()
+    return records
+
+
+def parse_firefox_history(history_db: Path, source_path: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    connection = sqlite3.connect(f"file:{history_db}?mode=ro", uri=True)
+    try:
+        connection.row_factory = sqlite3.Row
+        tables = table_names(connection)
+        if "moz_places" not in tables:
+            return records
+        for row in connection.execute(
+            "SELECT url, title, visit_count, last_visit_date FROM moz_places ORDER BY last_visit_date DESC LIMIT 500"
+        ):
+            url = str(row["url"] or "")
+            if not is_suspicious_url(url):
+                continue
+            records.append(
+                {
+                    "browser": "Firefox",
+                    "url": url,
+                    "title": row["title"],
+                    "visit_count": row["visit_count"],
+                    "last_visit_time": row["last_visit_date"],
+                    "source_path": to_windowsish(source_path),
+                    "kind": "browser_activity",
+                    "confidence": 0.78,
+                }
+            )
+    except sqlite3.DatabaseError:
+        return records
+    finally:
+        connection.close()
+    return records
+
+
+def browser_history_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_root = Path(temp_dir)
+        for entry in entries:
+            path_text = entry_path(entry)
+            lowered = path_text.lower()
+            is_chromium = lowered.endswith("/history") and (
+                "chrome/user data" in lowered or "edge/user data" in lowered or "chromium/user data" in lowered
+            )
+            is_firefox = lowered.endswith("/places.sqlite")
+            if not is_chromium and not is_firefox:
+                continue
+            temp_db = copy_entry_to_temp(disk_path, entry, temp_root, ".sqlite")
+            if is_chromium:
+                records.extend(parse_chromium_history(temp_db, path_text))
+            else:
+                records.extend(parse_firefox_history(temp_db, path_text))
+    return records[:300]
 
 
 def run_regripper(hive_path: Path, plugin: str) -> subprocess.CompletedProcess[str]:
@@ -337,10 +517,152 @@ def registry_autoruns_from_entries(disk_path: Path, entries: list[dict[str, str 
     return unique
 
 
+def parse_amcache_output(text: str, source_hive: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    current: dict[str, Any] = {"source_hive": source_hive}
+
+    def flush() -> None:
+        nonlocal current
+        path = str(current.get("path", ""))
+        program_name = str(current.get("program_name", ""))
+        if path or program_name:
+            blob = f"{path} {program_name}".lower()
+            if any(marker in blob for marker in ("powershell", ".ps1", "appdata", "temp", "downloads")):
+                current.setdefault("kind", "program_execution")
+                current.setdefault("confidence", 0.76)
+                records.append(current)
+        current = {"source_hive": source_hive}
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            flush()
+            continue
+        pair_match = re.match(
+            r"^(File(?:\s+Name)?|Name|Program(?:\s+Name)?|Path|File(?:\s+)?Path|SHA1|SHA-1|Last(?:\s+)?Modified|LastWrite)\s*:\s*(.*)$",
+            line,
+            re.IGNORECASE,
+        )
+        if not pair_match:
+            continue
+        key, value = pair_match.groups()
+        normalized = re.sub(r"[^a-z0-9]+", "_", key.lower()).strip("_")
+        if normalized in {"file", "file_name", "name", "program", "program_name"} and "program_name" not in current:
+            current["program_name"] = value
+        elif normalized in {"path", "file_path", "filepath"}:
+            current["path"] = value
+        elif normalized in {"sha1", "sha_1"}:
+            current["sha1"] = value
+        elif normalized.startswith("last"):
+            current["last_modified"] = value
+    flush()
+    return records
+
+
+def amcache_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_root = Path(temp_dir)
+        for entry in entries:
+            path_text = entry_path(entry)
+            if not path_text.lower().endswith("windows/appcompat/programs/amcache.hve"):
+                continue
+            temp_hive = copy_entry_to_temp(disk_path, entry, temp_root, ".hve")
+            completed = run_regripper(temp_hive, "amcache")
+            if completed.returncode != 0:
+                continue
+            records.extend(parse_amcache_output(completed.stdout, path_text))
+    return records[:300]
+
+
+def _event_data(root: ET.Element) -> dict[str, str]:
+    data: dict[str, str] = {}
+    for element in root.iter():
+        if strip_namespace(element.tag) != "Data":
+            continue
+        name = element.attrib.get("Name")
+        if name and element.text:
+            data[name] = element.text.strip()
+    return data
+
+
+def parse_security_events_xml(text: str, source_path: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for event_text in re.findall(r"<Event\b.*?</Event>", text, flags=re.DOTALL):
+        try:
+            root = ET.fromstring(event_text)
+        except ET.ParseError:
+            continue
+        event_id = _first_text(root, "EventID")
+        if event_id not in {"4624", "4625"}:
+            continue
+        data = _event_data(root)
+        user = data.get("TargetUserName") or data.get("SubjectUserName") or "unknown"
+        if user.endswith("$"):
+            continue
+        records.append(
+            {
+                "event_id": event_id,
+                "user": user,
+                "logon_type": data.get("LogonType"),
+                "source_ip": data.get("IpAddress"),
+                "source_path": to_windowsish(source_path),
+                "kind": "logon",
+                "confidence": 0.72 if event_id == "4624" else 0.62,
+            }
+        )
+    return records[:300]
+
+
+def user_logons_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    evtx_dump = shutil.which("evtx_dump.py")
+    if not evtx_dump:
+        return records
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_root = Path(temp_dir)
+        for entry in entries:
+            path_text = entry_path(entry)
+            if not path_text.lower().endswith("windows/system32/winevt/logs/security.evtx"):
+                continue
+            temp_evtx = copy_entry_to_temp(disk_path, entry, temp_root, ".evtx")
+            completed = run_command([evtx_dump, str(temp_evtx)])
+            if completed.returncode != 0:
+                continue
+            records.extend(parse_security_events_xml(completed.stdout, path_text))
+    return records[:300]
+
+
+def yara_scan_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    candidates = [entry for entry in entries if is_suspicious_path(entry_path(entry))][:300]
+    for entry in candidates:
+        path_text = entry_path(entry)
+        try:
+            content = read_entry_bytes(disk_path, entry)
+        except Exception:
+            continue
+        if len(content) > MAX_SCAN_BYTES:
+            continue
+        lowered = content.lower()
+        if b"powershell" not in lowered and b"http://" not in lowered and b"https://" not in lowered and b"set-executionpolicy" not in lowered:
+            continue
+        records.append(
+            {
+                "rule": "Inline_Suspicious_Windows_Artifact",
+                "file_path": to_windowsish(path_text),
+                "tags": ["powershell", "downloader"],
+                "kind": "detection",
+                "confidence": 0.74,
+            }
+        )
+    return records[:300]
+
+
 def collect_entries(disk_path: Path) -> tuple[list[dict[str, str | None]], str]:
     if disk_path.is_dir():
         return enumerate_directory(disk_path), "mounted_directory"
-    return enumerate_fls(disk_path), "image_fls"
+    return enumerate_fls(disk_path)
 
 
 def self_test_payload() -> dict[str, Any]:
@@ -349,9 +671,16 @@ def self_test_payload() -> dict[str, Any]:
         "supported_tools": sorted(SUPPORTED_TOOLS),
         "available_commands": {
             "find": shutil.which("find"),
+            "mmls": shutil.which("mmls"),
             "fls": shutil.which("fls"),
             "icat": shutil.which("icat"),
+            "analyzemft": shutil.which("analyzemft"),
+            "evtx_dump.py": shutil.which("evtx_dump.py"),
             "rip.pl": shutil.which("rip.pl"),
+            "yara": shutil.which("yara"),
+        },
+        "python_modules": {
+            "sqlite3": True,
         },
         "errors": [],
     }
@@ -385,13 +714,21 @@ def main(argv: list[str] | None = None) -> int:
         entries, source_mode = collect_entries(disk_path)
         payload["source_mode"] = source_mode
         if args.tool == "timeline_mft":
-            payload["records"] = timeline_from_entries(entries)
+            payload["records"] = timeline_from_entries(disk_path, entries)
         elif args.tool == "prefetch_summary":
             payload["records"] = prefetch_from_entries(entries)
+        elif args.tool == "browser_history":
+            payload["records"] = browser_history_from_entries(disk_path, entries)
+        elif args.tool == "amcache_summary":
+            payload["records"] = amcache_from_entries(disk_path, entries)
         elif args.tool == "scheduled_tasks":
             payload["records"] = scheduled_tasks_from_entries(disk_path, entries)
-        else:
+        elif args.tool == "registry_autoruns":
             payload["records"] = registry_autoruns_from_entries(disk_path, entries)
+        elif args.tool == "user_logons":
+            payload["records"] = user_logons_from_entries(disk_path, entries)
+        else:
+            payload["records"] = yara_scan_from_entries(disk_path, entries)
     except Exception as exc:
         payload["errors"] = [str(exc)]
 

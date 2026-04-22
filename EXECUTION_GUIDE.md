@@ -118,14 +118,16 @@ mmls realistic-windows-case/disk.E01 | head -10
 On the host machine:
 
 ```bash
-# For UTM VMs, locate the disk image
+# For UTM VMs, locate the qcow2 disk image
 ls -lh ~/Library/Containers/com.utmapp.UTM/Data/Documents/*.utm/Data/
 
-# Copy to project
-cp [path-to-utm-disk] ~/Desktop/Developer_workspace/findevil/sample_cases/realistic-windows-case/disk.E01
+# Convert qcow2 to raw; do not just rename qcow2 to .E01
+mkdir -p ~/Desktop/Developer_workspace/findevil/sample_cases/realistic-windows-case
+qemu-img convert -O raw [path-to-utm-qcow2] \
+  ~/Desktop/Developer_workspace/findevil/sample_cases/realistic-windows-case/disk.img
 
 # Compress for transfer
-gzip disk.E01
+gzip -k ~/Desktop/Developer_workspace/findevil/sample_cases/realistic-windows-case/disk.img
 ```
 
 ### Option C: Use existing sample Windows image (fastest for demo)
@@ -167,9 +169,8 @@ mmls disk.E01 | head -15
 echo "=== File system entries ==="
 fls disk.E01 | head -20
 
-# Check MFT if NTFS
-echo "=== MFT entries ==="
-analyzemft -f disk.E01 -o json | jq '.mft_records | .[0:3]' 2>/dev/null || echo "(MFT parsing may require live imaging)"
+# The CaseTrace SIFT bridge extracts $MFT from image entries and then runs analyzemft.
+# If direct fls fails, the bridge will try mmls offset detection for partitioned images.
 ```
 
 **Expected Output** (varies by image type):
@@ -235,6 +236,7 @@ python3 -m findevil analyze \
     --remote-host 127.0.0.1 \
     --remote-port 2222 \
     --remote-user sift \
+    --remote-workdir /home/sift/findevil \
     --remote-identity-file vm_assets/ssh/sift_vm_ed25519
 ```
 
@@ -393,7 +395,8 @@ bash scripts/image_and_analyze.sh realistic-windows-case \
     /dev/sda \
     127.0.0.1 \
     2222 \
-    sift
+    sift \
+    /home/sift/findevil
 ```
 
 ---
@@ -410,12 +413,13 @@ ls -la /dev/sd*
 sudo ddrescue -D --force /dev/sdb realistic-windows-case/disk.E01
 ```
 
-### analyzemft fails on image
+### fls or analyzemft fails on image
 ```bash
 # The image may be from a non-forensic tool
-# Try mounting to verify structure
+# Try mmls first and verify whether fls needs a partition offset
 sudo mmls realistic-windows-case/disk.E01
 sudo fls realistic-windows-case/disk.E01
+sudo fls -o [partition-start-sector-from-mmls] realistic-windows-case/disk.E01
 ```
 
 ### CaseTrace fails to connect to SIFT VM

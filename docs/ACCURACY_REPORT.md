@@ -21,7 +21,7 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 - Tool failures are represented as verification issues instead of crashing the run.
 - The SSH SIFT backend does not expose arbitrary shell execution to the agent.
 - Remote SIFT backend (SSH over 127.0.0.1:2222) executes successfully and returns structured JSON.
-- Real SIFT tools (analyzemft, regripper.pl) are callable from the remote bridge without errors.
+- Real SIFT/forensic parsers are callable from the remote bridge, including analyzemft, Regripper-backed hives, scheduled task XML, browser SQLite history, Security.evtx logons, and YARA-style suspicious file scanning.
 - Tool coverage across 2 iterations spans 10 different forensic tools.
 
 ## Known False Positives
@@ -40,7 +40,7 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 - ✓ Infrastructure: bounded orchestrator, verification layer, evidence linking
 - ✓ Local fixture backend: 100% working
 - ✓ Remote SIFT SSH backend: 100% working (tested in runs/local-utm-bridge, runs/remote-case)
-- ✓ Tool bridge deployment: real SIFT tools wired to real commands
+- ✓ Tool bridge deployment: core Windows triage tools wired to real remote collection paths
 - ✓ Self-correction behavior: blocks unsupported claims (demonstrated on fixture)
 
 **INCOMPLETE:**

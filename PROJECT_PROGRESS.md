@@ -13,13 +13,25 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Extra/stale UTM profiles removed; keep only `SIFT Ubuntu 22.04 x86_64`.
 - [x] Full SIFT install confirmed complete inside the VM.
 - [x] Protocol SIFT install confirmed complete inside the VM.
-- [x] Tool wiring: timeline_mft wired to analyzemft; registry_autoruns wired to regripper.pl; findevil repo deployed to VM.
+- [x] Tool wiring: core Windows triage tools now remote-backed through the SIFT bridge; findevil repo deployed to VM.
 - [x] Remote SIFT backend tested and working (runs/local-utm-bridge/ and runs/remote-case/ both used sift-ssh backend).
 - [ ] Realistic Windows demo case created with known artifacts.
 - [ ] End-to-end analysis against real forensic image completed.
 - [ ] Accuracy report with real-case evaluation completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
 - [x] Local UTM bridge self-test passed over SSH on `127.0.0.1:2222`.
+
+## Latest Check Notes
+
+- [x] Demo automation scripts exist for Windows artifact creation and image preparation.
+- [x] SIFT bridge now handles partitioned images with `mmls` offset detection and extracts `$MFT` before running `analyzemft`.
+- [x] Remote SSH failures now return structured JSON instead of Python tracebacks on timeout.
+- [x] Local SIFT SSH self-test succeeds on `127.0.0.1:2222` with a longer timeout for x86 emulation startup.
+- [x] Updated bridge code synced into `/home/sift/findevil` on the SIFT VM.
+- [x] Remote test suite passes inside the SIFT VM: `python3 -m unittest discover -s tests -v`.
+- [x] Checked local UTM, Desktop, Downloads, and Documents for a Windows VM/image; none is currently present.
+- [ ] Real Windows demo image still needs to be created or converted from the Windows VM.
+- [ ] Real-case accuracy can only be claimed after `runs/realistic-windows-case/` exists and has been manually validated against planted artifacts.
 
 ## Earlier Milestones
 
@@ -81,17 +93,22 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Add or verify `--remote-port 2222` support for the SSH SIFT backend.
 - [x] Copy or sync the repo into the VM at `/home/sift/findevil`.
 - [x] Run the bridge self-test against the VM.
-- [x] Wire at least two fixture tools to real SIFT commands:
-  - timeline_mft: Uses `analyzemft` command on extracted MFT files (fallback: fixture parsing)
-  - registry_autoruns: Uses `regripper.pl` command on extracted registry hives
-- [ ] Prioritize these first real tools:
+- [x] Wire fixture tools to real SIFT/forensic collection paths:
+  - timeline_mft: Uses `mmls`/`fls`/`icat` plus `analyzemft` on extracted `$MFT`.
+  - registry_autoruns: Uses `regripper` on extracted registry hives.
+  - scheduled_tasks: Parses task XML from extracted task files.
+  - browser_history: Parses Chromium/Firefox SQLite history databases.
+  - amcache_summary: Uses Regripper Amcache parsing where available.
+  - user_logons: Parses Security.evtx through `evtx_dump.py` when present.
+  - yara_scan: Scans suspicious files through a deterministic detection path.
+- [x] Prioritize these first real tools:
   `timeline_mft`, `registry_autoruns`, `scheduled_tasks`, `user_logons`.
-- [ ] Save raw command output for every real SIFT-backed tool call.
-- [ ] Ensure every real tool returns structured JSON only.
-- [ ] Ensure every real tool result includes:
+- [x] Save raw command output for every real SIFT-backed tool call.
+- [x] Ensure every real tool returns structured JSON only.
+- [x] Ensure every real tool result includes:
   `tool_name`, `inputs`, `raw_artifact_path`, `evidence_ids`, `errors`, and `confidence`.
 - [x] Make tool failures degrade cleanly instead of crashing the run.
-- [ ] Add tests for real-tool failure behavior using mocked SSH/SIFT output.
+- [x] Add tests for real-tool failure behavior using mocked SSH/SIFT output.
 
 ## Real Case Tasks
 

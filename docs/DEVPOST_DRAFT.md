@@ -67,7 +67,7 @@ Instead of giving the model arbitrary shell access, CaseTrace exposes typed fore
 Rather than downloading multi-GB public datasets, we create a realistic Windows disk image with known artifacts (~40 minutes):
 
 1. **Create attack artifacts on Windows system:**
-   - Browser history: visiting malicious download URLs
+   - Browser history: visiting suspicious URLs
    - PowerShell script execution: stored in suspicious location
    - Scheduled task: persistence mechanism
    - Registry autoruns: additional persistence
@@ -80,9 +80,10 @@ Rather than downloading multi-GB public datasets, we create a realistic Windows 
 
 3. **Run CaseTrace analysis:**
    - Use remote SIFT backend with real forensic tools
-   - Real analyzemft parsing actual $MFT
+   - Real analyzemft parsing actual $MFT extracted from the image
    - Real regripper parsing actual registry hives
-   - Real browser history parsing actual Chrome/Firefox databases
+   - Real scheduled task and Prefetch footprint extraction
+   - Browser history, Amcache, Security.evtx logons, and YARA-style scanning collected through the remote bridge
 
 4. **Validate accuracy:**
    - Every planted artifact found → 100% true positive rate
