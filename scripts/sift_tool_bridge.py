@@ -31,6 +31,30 @@ def run_command_bytes(command: list[str]) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(command, capture_output=True, text=False, check=False)
 
 
+def timeline_from_analyzemft(mft_path: Path) -> list[dict[str, Any]]:
+    """Extract timeline from MFT using real analyzemft command."""
+    records: list[dict[str, Any]] = []
+    completed = run_command(["analyzemft", "-f", str(mft_path), "-o", "json"])
+    if completed.returncode != 0 or not completed.stdout.strip():
+        return records
+    try:
+        data = json.loads(completed.stdout)
+        entries = data if isinstance(data, list) else data.get("records", [])
+        for entry in entries[:500]:
+            records.append(
+                {
+                    "action": entry.get("action", "unknown"),
+                    "path": entry.get("filename", "unknown"),
+                    "timestamp": entry.get("modify_time", None),
+                    "kind": "timeline_event",
+                    "confidence": 0.85,
+                }
+            )
+    except (json.JSONDecodeError, KeyError, TypeError):
+        pass
+    return records
+
+
 def enumerate_directory(root: Path) -> list[dict[str, str | None]]:
     command = ["find", str(root), "-type", "f"]
     completed = run_command(command)
@@ -103,7 +127,22 @@ def prefetch_from_entries(entries: list[dict[str, str | None]]) -> list[dict[str
 
 
 def timeline_from_entries(entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
+    """Extract timeline from entries, preferring real analyzemft output when available."""
     records: list[dict[str, Any]] = []
+    
+    # First, try to find and analyze MFT files using real analyzemft command
+    for entry in entries:
+        path_text = entry_path(entry)
+        lowered = path_text.lower()
+        if "$mft" in lowered or path_text.endswith("$MFT"):
+            local_path = entry.get("local_path")
+            if local_path and Path(local_path).exists():
+                real_records = timeline_from_analyzemft(Path(local_path))
+                if real_records:
+                    records.extend(real_records)
+                    return records  # Return real analyzemft results if available
+    
+    # Fallback: extract suspicious file timeline from entries
     for entry in entries:
         path_text = entry_path(entry)
         lowered = path_text.lower()

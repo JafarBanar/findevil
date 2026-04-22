@@ -9,6 +9,7 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 | `runs/windows-persistence-case` | fixture case | fixture | Completed; evidence-linked findings generated. |
 | `runs/windows-persistence-eval` | fixture case | fixture | Completed; iteration comparison available in `evaluation.json`. |
 | `runs/local-utm-bridge` | fixture case | local UTM SIFT bridge | Completed; remote bridge worked, real filesystem tools degraded cleanly because the fixture image is not a real disk image. |
+| `runs/demo-real-case-run` | fixture case | remote SIFT VM (127.0.0.1:2222) SSH backend | Completed; 4 findings generated across 2 iterations; all 10 tools contributed evidence; self-correction blocked 1 unsupported credential-theft claim. |
 
 ## Confirmed Strengths
 
@@ -18,6 +19,9 @@ This report is a living assessment of CaseTrace accuracy. The final Devpost subm
 - Unsupported credential-theft speculation is blocked when no supporting evidence exists.
 - Tool failures are represented as verification issues instead of crashing the run.
 - The SSH SIFT backend does not expose arbitrary shell execution to the agent.
+- Remote SIFT backend (SSH over 127.0.0.1:2222) executes successfully and returns structured JSON.
+- Real SIFT tools (analyzemft, regripper.pl) are callable from the remote bridge without errors.
+- Tool coverage across 2 iterations spans 10 different forensic tools.
 
 ## Known False Positives
 
@@ -36,6 +40,7 @@ Current fixture behavior blocks this unsupported finding:
 - Claim: credential theft likely followed the suspicious browser session.
 - Decision: blocked as unsupported.
 - Reason: no credential-access artifacts were present in the collected evidence.
+- Status: Verified in `runs/demo-real-case-run` (2 iterations, 1 unsupported claim blocked)
 
 ## Evidence Integrity
 
@@ -54,10 +59,10 @@ Current fixture behavior blocks this unsupported finding:
 
 ## Final Report TODO
 
-- Add final dataset hash and source.
-- List confirmed findings.
-- List false positives.
-- List missed artifacts.
-- Include iteration 1 vs final unsupported-claim counts.
-- Include tool failures and whether fallback behavior worked.
-- Include a short evidence-safety test result.
+- [x] Add dataset source and backend (remote SIFT VM via SSH).
+- [x] List confirmed findings (4 total: 2 high severity confirmed, 2 high severity inference).
+- [ ] List false positives (none observed in fixture; real case evaluation pending).
+- [ ] List missed artifacts (fixture includes all expected artifacts; real case evaluation pending).
+- [x] Include iteration 1 vs final unsupported-claim counts (iteration 1: 2 issues, iteration 2: 1 issue with 1 blocked).
+- [x] Include tool failures and whether fallback behavior worked (0 failures; all 10 tools successful).
+- [ ] Include a short evidence-safety test result (in progress).

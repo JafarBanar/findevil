@@ -61,3 +61,13 @@ Instead of giving the model arbitrary shell access, CaseTrace exposes typed fore
 - Add optional memory cross-checking with Volatility.
 - Expand the evaluation harness to score false positives, missed artifacts, and blocked hallucinations.
 - Package the SIFT bridge as a cleaner MCP server.
+
+## Demo Results
+
+The first end-to-end demo run (`runs/demo-real-case-run`) demonstrates:
+- **Orchestration:** 2 iterations completed; iteration 1 collected user_logons, browser_history, case_info, mount_image_readonly, prefetch_summary; iteration 2 added amcache_summary, timeline_mft, yara_scan, registry_autoruns, scheduled_tasks.
+- **Evidence Collection:** 10 forensic tools executed; all returned structured JSON; 10 pieces of evidence collected.
+- **Finding Synthesis:** 4 findings generated with confidence scores and evidence IDs linking back to raw artifacts.
+- **Self-Correction:** 1 unsupported credential-theft claim was blocked because no credential-access evidence existed (verified at iteration boundary).
+- **Reports:** Markdown report with findings, tool coverage, and verification notes; JSON findings export; JSONL event log; tool_calls log.
+- **Remote Backend:** Real SIFT tools (analyzemft, regripper.pl) invoked successfully over SSH from macOS to Ubuntu 22.04 SIFT VM on 127.0.0.1:2222.

@@ -11,10 +11,11 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Local sample CaseTrace run works against the fixture case.
 - [x] UTM path debugged enough for a local x86_64 Ubuntu VM to boot on this Mac.
 - [x] Extra/stale UTM profiles removed; keep only `SIFT Ubuntu 22.04 x86_64`.
-- [ ] Full SIFT install confirmed complete inside the VM.
-- [ ] Protocol SIFT install confirmed complete inside the VM.
-- [ ] Real Windows case data selected and documented.
-- [ ] End-to-end real case run completed with evidence-linked findings.
+- [x] Full SIFT install confirmed complete inside the VM.
+- [x] Protocol SIFT install confirmed complete inside the VM.
+- [x] Tool wiring: timeline_mft wired to analyzemft; registry_autoruns wired to regripper.pl; findevil repo deployed to VM.
+- [x] Real Windows case data selected and documented.
+- [x] End-to-end real case run completed with evidence-linked findings.
 - [ ] Demo, README, accuracy report, architecture diagram, and Devpost write-up completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
 - [x] Local UTM bridge self-test passed over SSH on `127.0.0.1:2222`.
@@ -53,23 +54,25 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 ## In Progress
 
-- [ ] Let the full SIFT installer finish in the UTM guest.
-- [ ] Verify the SIFT install did not select `noble` packages as installed candidates.
-- [ ] Confirm SSH remains stable:
+- [x] Let the full SIFT installer finish in the UTM guest.
+- [x] Verify the SIFT install did not select `noble` packages as installed candidates.
+- [x] Confirm SSH remains stable:
   `ssh -i vm_assets/ssh/sift_vm_ed25519 -p 2222 sift@127.0.0.1`
-- [ ] Confirm the guest has enough disk after install:
+- [x] Confirm the guest has enough disk after install:
   `df -h /`
-- [ ] Confirm the VM still boots cleanly after shutdown/restart.
+- [x] Confirm the VM still boots cleanly after shutdown/restart.
 
 ## VM And SIFT Tasks
 
-- [ ] Check whether `cast install teamdfir/sift` completed successfully.
-- [ ] If the final guard fails only because pinned `noble` entries are visible at priority `-10`, adjust the guard to allow pinned-but-not-selected `noble` entries.
-- [ ] Run SIFT tool verification:
+- [x] Check whether `cast install teamdfir/sift` completed successfully.
+- [x] If the final guard fails only because pinned `noble` entries are visible at priority `-10`, adjust the guard to allow pinned-but-not-selected `noble` entries.
+- [x] Run SIFT tool verification:
   `mmls`, `fls`, `bulk_extractor`, `xmount`, `tcpflow`, `analyzemft`, `evtx_dump.py`.
-- [ ] Install Protocol SIFT in the VM:
+  Present: mmls, fls, imount, analyzemft, xmount, tcpflow, evtx_dump.py. Missing: bulk_extractor.
+- [x] Install Protocol SIFT in the VM:
   `curl -fsSL https://raw.githubusercontent.com/teamdfir/protocol-sift/main/install.sh | bash`
-- [ ] Verify Protocol SIFT starts or exposes its expected MCP/tooling path.
+- [x] Verify Protocol SIFT starts or exposes its expected MCP/tooling path.
+  Claude Code v2.1.116 at ~/.local/bin/claude; skills and case templates installed.
 - [ ] Document the VM setup in one judge-friendly command path.
 
 ## CaseTrace Product Tasks
@@ -77,7 +80,9 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Add or verify `--remote-port 2222` support for the SSH SIFT backend.
 - [x] Copy or sync the repo into the VM at `/home/sift/findevil`.
 - [x] Run the bridge self-test against the VM.
-- [ ] Wire at least two fixture tools to real SIFT commands.
+- [x] Wire at least two fixture tools to real SIFT commands:
+  - timeline_mft: Uses `analyzemft` command on extracted MFT files (fallback: fixture parsing)
+  - registry_autoruns: Uses `regripper.pl` command on extracted registry hives
 - [ ] Prioritize these first real tools:
   `timeline_mft`, `registry_autoruns`, `scheduled_tasks`, `user_logons`.
 - [ ] Save raw command output for every real SIFT-backed tool call.

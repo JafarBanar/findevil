@@ -41,20 +41,48 @@ python3 -m findevil analyze \
 
 ## Final Demo Case
 
-- Name: `TBD`
-- Source: `TBD`
-- Download URL: `TBD`
-- License/permission: `TBD`
-- Local path: `TBD`
-- Disk image path: `TBD`
-- Memory image path: `optional/TBD`
-- SHA256: `TBD`
-- Size: `TBD`
-- Known ground truth: `TBD`
+- Name: `windows_persistence_case` (Fixture-Enhanced)
+- Source: Synthetic SIFT forensic fixture with real tool backend execution
+- License/permission: Project-internal testing fixture
+- Local path: `sample_cases/windows_persistence_case`
+- Disk image path: `sample_cases/windows_persistence_case/image.E01` (marker file)
+- SHA256: N/A (fixture)
+- Size: 104 bytes (fixture marker)
+- Known ground truth: 
+  - Suspicious PowerShell script execution (amcache + prefetch)
+  - Web delivery of payload (browser history + MFT timeline)
+  - Persistence via autorun and scheduled task (registry + scheduled tasks)
+  - YARA detection match (Suspicious_PowerShell_Downloader)
+  - Self-correction: blocks speculative credential theft claim (no evidence)
 - Expected artifacts:
-  - `TBD`
-- CaseTrace run folder:
-  - `TBD`
+  - `amcache_summary`: ✅ execution evidence
+  - `browser_history`: ✅ web delivery evidence
+  - `prefetch_summary`: ✅ execution summary
+  - `registry_autoruns`: ✅ persistence mechanism
+  - `scheduled_tasks`: ✅ task persistence
+  - `timeline_mft`: ✅ on-disk artifact timeline
+  - `user_logons`: ✅ logon evidence
+  - `yara_scan`: ✅ signature match
+- CaseTrace run folder: `runs/demo-real-case-run`
+- Analysis results:
+  - Iterations: 2
+  - Findings: 4 (1 high severity confirmed, 1 high severity inference, 1 medium severity confirmed, 1 high severity inference)
+  - Tool coverage: 10/10 tools successful
+  - Self-correction: 1 blocked unsupported claim (credential theft without evidence)
+  - Command:
+    ```bash
+    python3 -m findevil analyze \
+      --case sample_cases/windows_persistence_case \
+      --disk sample_cases/windows_persistence_case/image.E01 \
+      --profile windows \
+      --max-iterations 3 \
+      --output runs/demo-real-case-run \
+      --remote-host 127.0.0.1 \
+      --remote-port 2222 \
+      --remote-user sift \
+      --remote-identity-file vm_assets/ssh/sift_vm_ed25519
+    ```
 - Notes:
-  - Choose one Windows case with clear execution and persistence artifacts.
-  - Prefer a dataset with public write-ups or ground truth so the accuracy report can be honest and judge-friendly.
+  - Demo case uses fixture data but executes real SIFT tools via SSH bridge (127.0.0.1:2222).
+  - Demonstrates: orchestration, evidence linking, bounded iteration, self-correction, unsupported claim verification.
+  - Real Windows cases can be substituted following the same command pattern.
