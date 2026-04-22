@@ -473,6 +473,36 @@ def parse_regripper_output(text: str, source_hive: str, plugin: str) -> list[dic
     return records
 
 
+def parse_registry_export(text: str, source_path: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    current_key: str | None = None
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith(";") or line.startswith("Windows Registry Editor"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            current_key = line.strip("[]")
+            continue
+        if not current_key or "\\currentversion\\run" not in current_key.lower():
+            continue
+        match = re.match(r'^"([^"]+)"=(?:"(.*)"|hex:.*)$', line)
+        if not match:
+            continue
+        entry, value = match.groups()
+        records.append(
+            {
+                "entry": entry,
+                "value": value.replace("\\\\", "\\") if value else "",
+                "reg_path": current_key,
+                "source_hive": source_path,
+                "plugin": "reg_export",
+                "kind": "persistence",
+                "confidence": 0.72,
+            }
+        )
+    return records
+
+
 def collect_registry_hives(disk_path: Path, entries: list[dict[str, str | None]]) -> list[tuple[dict[str, str | None], str]]:
     collected: list[tuple[dict[str, str | None], str]] = []
     for entry in entries:
@@ -487,8 +517,6 @@ def collect_registry_hives(disk_path: Path, entries: list[dict[str, str | None]]
 
 def registry_autoruns_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
     hive_entries = collect_registry_hives(disk_path, entries)
-    if not hive_entries:
-        return []
     records: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_root = Path(temp_dir)
@@ -502,6 +530,18 @@ def registry_autoruns_from_entries(disk_path: Path, entries: list[dict[str, str 
                     continue
                 parsed = parse_regripper_output(completed.stdout, entry_path(entry), plugin)
                 records.extend(parsed)
+    for entry in entries:
+        path_text = entry_path(entry)
+        lowered = path_text.lower()
+        if not (lowered.endswith(".reg") or "autorun" in lowered):
+            continue
+        try:
+            text = read_entry_bytes(disk_path, entry).decode("utf-16", errors="ignore")
+            if "\\currentversion\\run" not in text.lower():
+                text = read_entry_bytes(disk_path, entry).decode("utf-8", errors="ignore")
+        except Exception:
+            continue
+        records.extend(parse_registry_export(text, path_text))
     unique: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for record in records:
@@ -565,13 +605,19 @@ def amcache_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) 
         temp_root = Path(temp_dir)
         for entry in entries:
             path_text = entry_path(entry)
-            if not path_text.lower().endswith("windows/appcompat/programs/amcache.hve"):
-                continue
-            temp_hive = copy_entry_to_temp(disk_path, entry, temp_root, ".hve")
-            completed = run_regripper(temp_hive, "amcache")
-            if completed.returncode != 0:
-                continue
-            records.extend(parse_amcache_output(completed.stdout, path_text))
+            lowered = path_text.lower()
+            if lowered.endswith("windows/appcompat/programs/amcache.hve"):
+                temp_hive = copy_entry_to_temp(disk_path, entry, temp_root, ".hve")
+                completed = run_regripper(temp_hive, "amcache")
+                if completed.returncode != 0:
+                    continue
+                records.extend(parse_amcache_output(completed.stdout, path_text))
+            elif "amcache" in lowered and lowered.endswith((".txt", ".log", ".csv")):
+                try:
+                    text = read_entry_bytes(disk_path, entry).decode("utf-8", errors="ignore")
+                except Exception:
+                    continue
+                records.extend(parse_amcache_output(text, path_text))
     return records[:300]
 
 
@@ -617,13 +663,19 @@ def parse_security_events_xml(text: str, source_path: str) -> list[dict[str, Any
 def user_logons_from_entries(disk_path: Path, entries: list[dict[str, str | None]]) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     evtx_dump = shutil.which("evtx_dump.py")
-    if not evtx_dump:
-        return records
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_root = Path(temp_dir)
         for entry in entries:
             path_text = entry_path(entry)
-            if not path_text.lower().endswith("windows/system32/winevt/logs/security.evtx"):
+            lowered = path_text.lower()
+            if lowered.endswith(("security.xml", "security.evtx.xml")):
+                try:
+                    text = read_entry_bytes(disk_path, entry).decode("utf-8", errors="ignore")
+                except Exception:
+                    continue
+                records.extend(parse_security_events_xml(text, path_text))
+                continue
+            if not evtx_dump or not lowered.endswith("windows/system32/winevt/logs/security.evtx"):
                 continue
             temp_evtx = copy_entry_to_temp(disk_path, entry, temp_root, ".evtx")
             completed = run_command([evtx_dump, str(temp_evtx)])

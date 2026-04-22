@@ -320,7 +320,7 @@ class ToolRegistry:
                 name="amcache_summary",
                 description="Load installed and executed program evidence from Amcache.",
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-                handler=lambda context, inputs: _load_fixture_tool("amcache_summary", context, inputs),
+                handler=lambda context, inputs: _load_tool("amcache_summary", context, inputs),
             ),
             "registry_autoruns": ToolSpec(
                 name="registry_autoruns",
@@ -338,19 +338,19 @@ class ToolRegistry:
                 name="user_logons",
                 description="Load user logon history for the endpoint.",
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-                handler=lambda context, inputs: _load_fixture_tool("user_logons", context, inputs),
+                handler=lambda context, inputs: _load_tool("user_logons", context, inputs),
             ),
             "browser_history": ToolSpec(
                 name="browser_history",
                 description="Load browser history and download activity.",
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-                handler=lambda context, inputs: _load_fixture_tool("browser_history", context, inputs),
+                handler=lambda context, inputs: _load_tool("browser_history", context, inputs),
             ),
             "yara_scan": ToolSpec(
                 name="yara_scan",
                 description="Load YARA scan hits or detection matches.",
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
-                handler=lambda context, inputs: _load_fixture_tool("yara_scan", context, inputs),
+                handler=lambda context, inputs: _load_tool("yara_scan", context, inputs),
             ),
             "vol_process_tree": ToolSpec(
                 name="vol_process_tree",

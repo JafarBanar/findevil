@@ -53,6 +53,7 @@ More detail lives in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 Submission support docs:
 - [Dataset documentation](./docs/DATASETS.md)
 - [Accuracy report draft](./docs/ACCURACY_REPORT.md)
+- [Artifact-tree validation](./docs/ARTIFACT_TREE_VALIDATION.md)
 - [Devpost story draft](./docs/DEVPOST_DRAFT.md)
 
 ## No-VM Development

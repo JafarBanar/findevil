@@ -15,7 +15,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Protocol SIFT install confirmed complete inside the VM.
 - [x] Tool wiring: core Windows triage tools now remote-backed through the SIFT bridge; findevil repo deployed to VM.
 - [x] Remote SIFT backend tested and working (runs/local-utm-bridge/ and runs/remote-case/ both used sift-ssh backend).
-- [ ] Realistic Windows demo case created with known artifacts.
+- [x] Realistic Windows demo case created with known artifacts as a controlled artifact tree.
 - [ ] End-to-end analysis against real forensic image completed.
 - [ ] Accuracy report with real-case evaluation completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
@@ -30,8 +30,24 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Updated bridge code synced into `/home/sift/findevil` on the SIFT VM.
 - [x] Remote test suite passes inside the SIFT VM: `python3 -m unittest discover -s tests -v`.
 - [x] Checked local UTM, Desktop, Downloads, and Documents for a Windows VM/image; none is currently present.
+- [x] Controlled artifact-tree run completed through `sift-ssh`: `runs/realistic-windows-case-script`.
+- [x] Controlled artifact-tree validation completed: 10/10 tools succeeded, 8/8 artifact categories produced evidence, 1 unsupported claim blocked.
 - [ ] Real Windows demo image still needs to be created or converted from the Windows VM.
 - [ ] Real-case accuracy can only be claimed after `runs/realistic-windows-case/` exists and has been manually validated against planted artifacts.
+
+## Next Steps To Finish
+
+- [ ] Create or attach a Windows 10/11 VM or real Windows forensic image.
+- [ ] Run `scripts/create_windows_artifacts.ps1` inside the Windows VM as Administrator.
+- [ ] Shut down the Windows VM cleanly after artifacts are created.
+- [ ] Export or convert the Windows disk to raw/E01 format; for UTM qcow2 use `qemu-img convert -O raw`.
+- [ ] Place the image at `cases/realistic-windows-case/disk.img` or `cases/realistic-windows-case/disk.E01`.
+- [ ] Run `bash scripts/image_and_analyze.sh realistic-windows-case <target-image-path> <source-image-path> 127.0.0.1 2222 sift /home/sift/findevil`.
+- [x] Run `bash cases/realistic-windows-case/run_analysis.sh` for the controlled artifact-tree case.
+- [x] Validate `runs/realistic-windows-case-script/report.md`, `findings.json`, `events.jsonl`, and `tool_calls.jsonl`.
+- [x] Create validation documentation comparing planted artifact-tree artifacts against detected findings.
+- [x] Update `docs/ACCURACY_REPORT.md`, `docs/DATASETS.md`, and `docs/DEVPOST_DRAFT.md` with the artifact-tree results.
+- [ ] Record the under-5-minute demo video from the real run.
 
 ## Earlier Milestones
 
@@ -86,7 +102,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
   `curl -fsSL https://raw.githubusercontent.com/teamdfir/protocol-sift/main/install.sh | bash`
 - [x] Verify Protocol SIFT starts or exposes its expected MCP/tooling path.
   Claude Code v2.1.116 at ~/.local/bin/claude; skills and case templates installed.
-- [ ] Document the VM setup in one judge-friendly command path.
+- [x] Document the VM setup in one judge-friendly command path.
 
 ## CaseTrace Product Tasks
 
@@ -114,35 +130,35 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 - [ ] Choose one Windows disk image case for the main demo.
 - [ ] Record dataset source, license/permission, hash, size, and expected artifacts.
-- [ ] Put case data under a local path such as `/cases/case1`.
+- [x] Put controlled artifact-tree case data under `cases/realistic-windows-case`.
 - [ ] Run CaseTrace on the real case.
-- [ ] Review `report.md` manually for false positives and unsupported claims.
+- [x] Review artifact-tree `report.md` manually for false positives and unsupported claims.
 - [ ] Update verifier rules based on the first real run.
-- [ ] Re-run until the final report is evidence-linked and defensible.
-- [ ] Preserve the complete run folder for Devpost judging.
+- [x] Re-run controlled artifact-tree case until the final report is evidence-linked and defensible.
+- [x] Preserve the complete controlled artifact-tree run folder locally for Devpost judging.
 
 ## Self-Correction And Evaluation Tasks
 
-- [ ] Create a test case where one expected artifact is missing.
-- [ ] Confirm the agent triggers self-correction only for valid reasons.
-- [ ] Create an unsupported-claim test case.
-- [ ] Confirm unsupported claims are removed or downgraded to `inference`.
-- [ ] Create a tool-failure test case.
-- [ ] Confirm the agent retries, falls back, or exits gracefully.
-- [ ] Compare iteration 1 against final output.
-- [ ] Count unsupported claims before and after self-correction.
-- [ ] Save this comparison in the accuracy report.
+- [x] Create a test case where one expected artifact is missing.
+- [x] Confirm the agent triggers self-correction only for valid reasons.
+- [x] Create an unsupported-claim test case.
+- [x] Confirm unsupported claims are removed or downgraded to `inference`.
+- [x] Create a tool-failure test case.
+- [x] Confirm the agent retries, falls back, or exits gracefully.
+- [x] Compare iteration 1 against final output.
+- [x] Count unsupported claims before and after self-correction.
+- [x] Save this comparison in the accuracy report.
 
 ## Submission Documents
 
-- [ ] Finish README quickstart for local runs.
-- [ ] Finish SIFT VM setup instructions.
+- [x] Finish README quickstart for local runs.
+- [x] Finish SIFT VM setup instructions.
 - [x] Add architecture diagram.
-- [ ] Add dataset documentation.
-- [ ] Add accuracy report.
-- [ ] Add evidence integrity section.
-- [ ] Add blocked hallucinations section.
-- [ ] Add known limitations section.
+- [x] Add dataset documentation.
+- [x] Add accuracy report.
+- [x] Add evidence integrity section.
+- [x] Add blocked hallucinations section.
+- [x] Add known limitations section.
 - [x] Add Devpost project story:
   What it does, how it was built, challenges, what was learned, and what is next.
 - [x] Add open-source license confirmation.
@@ -163,10 +179,10 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 
 ## Winning Focus
 
-- [ ] Do not broaden into many shallow artifact types.
+- [x] Do not broaden into many shallow artifact types.
 - [ ] Make the Windows disk workflow excellent.
-- [ ] Make evidence traceability obvious.
-- [ ] Make read-only architectural guardrails obvious.
-- [ ] Show at least one blocked hallucination.
+- [x] Make evidence traceability obvious.
+- [x] Make read-only architectural guardrails obvious.
+- [x] Show at least one blocked hallucination.
 - [ ] Show one clean end-to-end real case.
-- [ ] Keep judge setup simple and reproducible.
+- [x] Keep judge setup simple and reproducible.

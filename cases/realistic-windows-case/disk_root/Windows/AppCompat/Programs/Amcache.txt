@@ -1,0 +1,4 @@
+
+Name: powershell.exe
+Path: C:\Users\Analyst\AppData\Roaming\Microsoft\Windows\Themes\update.ps1
+SHA1: deadc0de00112233445566778899aabbccddeeff

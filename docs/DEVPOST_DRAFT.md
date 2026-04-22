@@ -114,3 +114,10 @@ See [docs/CREATE_DEMO_CASE.md](./CREATE_DEMO_CASE.md) for step-by-step guide.
 - Real SIFT tools running on real disk image
 - Evidence linked to actual forensic artifacts
 - Reproducible case for judge evaluation
+
+**Controlled artifact-tree smoke demo** (`runs/realistic-windows-case-script` with `sift-ssh` backend):
+- 10/10 typed tools completed successfully through the remote SIFT bridge
+- 8/8 planted artifact categories produced evidence
+- 4 findings retained: script execution, web delivery, persistence, and detection hit
+- 1 unsupported credential-theft claim blocked by verification
+- Scope note: this is a reproducible Windows-like artifact tree, not a full forensic disk image

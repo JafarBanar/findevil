@@ -1,0 +1,9 @@
+
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System><EventID>4624</EventID></System>
+  <EventData>
+    <Data Name="TargetUserName">Analyst</Data>
+    <Data Name="LogonType">2</Data>
+    <Data Name="IpAddress">127.0.0.1</Data>
+  </EventData>
+</Event>

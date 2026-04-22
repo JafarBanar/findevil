@@ -39,9 +39,45 @@ python3 -m findevil analyze \
   - Real SIFT-backed filesystem tools may return `Cannot determine file system type` against the fixture image.
   - The run completes without crashing and logs tool failures in `events.jsonl`, `tool_calls.jsonl`, and `report.md`.
 
+## Controlled Artifact-Tree Demo Case
+
+- Name: `realistic-windows-case`
+- Path: `cases/realistic-windows-case`
+- Disk input path: `cases/realistic-windows-case/disk_root`
+- Source: generated locally by `scripts/create_realistic_artifact_tree.py`
+- License/permission: project-owned synthetic artifact data, no external dataset.
+- Format: mounted Windows-like artifact tree, not a forensic disk image.
+- Size: about 60 KB
+- Aggregate tar SHA-256: `4118400f01d7ff45a685a4821fb182f062c2117ed3fa52ea38b03046c5fd8d82`
+- Purpose: reproducible smoke demo for the remote SIFT bridge and the full typed-tool workflow while a real Windows image is unavailable.
+- Expected artifacts:
+  - PowerShell payload under `AppData\Roaming\Microsoft\Windows\Themes`
+  - Chrome history and download row for `invoice_update.zip`
+  - Prefetch marker for `POWERSHELL.EXE`
+  - Amcache text export for `powershell.exe`
+  - Scheduled task `ThemeUpdater`
+  - Registry autorun export under `CurrentVersion\Run`
+  - Security logon XML for user `Analyst`
+  - Suspicious downloaded/script files for timeline and YARA-style scanning
+- Run output:
+  - `runs/realistic-windows-case-script`
+  - `runs/realistic-windows-case-final`
+- Validation:
+  - 10/10 tools succeeded
+  - 8/8 expected artifact categories produced evidence
+  - 4 retained findings
+  - 1 unsupported speculative claim blocked
+- Recommended command:
+
+```bash
+python3 scripts/create_realistic_artifact_tree.py --case-dir cases/realistic-windows-case
+rsync -a cases sift@127.0.0.1:/home/sift/findevil/
+RUN_OUTPUT=runs/realistic-windows-case-script bash cases/realistic-windows-case/run_analysis.sh
+```
+
 ## Final Demo Case
 
-**STATUS:** ❌ NOT YET IMPLEMENTED - Awaiting Real Forensic Image
+**STATUS:** Partial. The controlled artifact-tree demo is implemented and validated; a full real forensic disk image is still pending.
 
 ### Requirements for Final Case
 - Name: TBD

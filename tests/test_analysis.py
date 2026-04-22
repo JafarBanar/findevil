@@ -342,6 +342,17 @@ Value : powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData
         self.assertEqual(records[0]["entry"], "ThemeUpdater")
         self.assertIn("powershell.exe", records[0]["value"])
 
+    def test_bridge_parser_extracts_registry_export_autoruns(self) -> None:
+        sample = r'''
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
+"ThemeUpdater"="powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\update.ps1"
+'''
+        records = BRIDGE_MODULE.parse_registry_export(sample, "autoruns.reg")
+        self.assertEqual(records[0]["entry"], "ThemeUpdater")
+        self.assertIn("powershell.exe", records[0]["value"])
+
     def test_bridge_parser_extracts_security_logons(self) -> None:
         sample = """
 <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">

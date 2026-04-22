@@ -1,0 +1,1 @@
+cdn-delivery.example/invoice_update.zip
