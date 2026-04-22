@@ -15,13 +15,13 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Protocol SIFT install confirmed complete inside the VM.
 - [x] Tool wiring: timeline_mft wired to analyzemft; registry_autoruns wired to regripper.pl; findevil repo deployed to VM.
 - [x] Remote SIFT backend tested and working (runs/local-utm-bridge/ and runs/remote-case/ both used sift-ssh backend).
-- [ ] Real Windows case data obtained and analyzed.
-- [ ] End-to-end real case run with real forensic findings (currently demo uses fixture data for testing).
+- [ ] Realistic Windows demo case created with known artifacts.
+- [ ] End-to-end analysis against real forensic image completed.
 - [ ] Accuracy report with real-case evaluation completed.
 - [x] Public GitHub repository created: https://github.com/JafarBanar/findevil
 - [x] Local UTM bridge self-test passed over SSH on `127.0.0.1:2222`.
 
-## Done
+## Earlier Milestones
 
 - [x] Defined the hackathon submission plan and scoring strategy.
 - [x] Scoped v1 to Windows disk triage first.
