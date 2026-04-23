@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="960" viewBox="0 0 1600 960" role="img" aria-labelledby="title desc">
+  <title id="title">CaseTrace architecture diagram</title>
+  <desc id="desc">Architecture diagram for CaseTrace showing the bounded orchestrator, typed read-only tool surface, SIFT SSH backend, data sources, verification, self-correction, and output logs.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#42556b"/>
+    </marker>
+    <style>
+      .bg { fill: #f5f7fb; }
+      .panel { fill: #ffffff; stroke: #d6dde8; stroke-width: 2; }
+      .title { font: 700 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #15263b; }
+      .subtitle { font: 500 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #4d5d72; }
+      .section { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #213246; }
+      .label { font: 700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #18293d; }
+      .body { font: 500 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #46586d; }
+      .small { font: 500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #46586d; }
+      .chip { font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #ffffff; }
+      .arrow { stroke: #42556b; stroke-width: 3.2; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke-dasharray: 10 8; }
+      .input { fill: #e8f1ff; stroke: #7ba4e6; }
+      .control { fill: #eef8ef; stroke: #78ad7d; }
+      .tool { fill: #fff3e8; stroke: #da9a61; }
+      .storage { fill: #f2ebff; stroke: #9f7ad8; }
+      .guardrail { fill: #edf5ff; stroke: #6f96ce; }
+      .output { fill: #fff8db; stroke: #c7a847; }
+      .decision { fill: #fff1f1; stroke: #d27d7d; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="960"/>
+
+  <text class="title" x="70" y="70">CaseTrace Architecture</text>
+  <text class="subtitle" x="70" y="102">Pattern: Custom MCP Server + direct agent extension. Prompt guardrails and architectural guardrails are separated explicitly.</text>
+
+  <rect class="panel" x="50" y="130" width="1080" height="790" rx="18"/>
+  <text class="section" x="78" y="168">Execution Flow</text>
+
+  <rect class="panel input" x="80" y="205" width="175" height="90" rx="12"/>
+  <text class="label" x="102" y="238">Case Request</text>
+  <text class="body" x="102" y="266">disk image, profile,</text>
+  <text class="body" x="102" y="287">output directory</text>
+
+  <rect class="panel control" x="305" y="195" width="220" height="110" rx="12"/>
+  <text class="label" x="327" y="228">Bounded Orchestrator</text>
+  <text class="body" x="327" y="256">intake, plan, collect, verify,</text>
+  <text class="body" x="327" y="277">self-correct, finalize</text>
+  <text class="body" x="327" y="298">bounded by max iterations</text>
+
+  <rect class="panel control" x="580" y="205" width="180" height="90" rx="12"/>
+  <text class="label" x="602" y="238">Planner</text>
+  <text class="body" x="602" y="266">selects typed tools</text>
+  <text class="body" x="602" y="287">for the next pass</text>
+
+  <rect class="panel tool" x="815" y="195" width="265" height="110" rx="12"/>
+  <text class="label" x="837" y="228">Read-Only Tool Surface</text>
+  <text class="body" x="837" y="256">named tools only, structured JSON</text>
+  <text class="body" x="837" y="277">no arbitrary shell access for agent</text>
+  <text class="body" x="837" y="298">typed collection entrypoint</text>
+
+  <rect class="panel tool" x="100" y="365" width="225" height="125" rx="12"/>
+  <text class="label" x="122" y="399">Fixture Backend</text>
+  <text class="body" x="122" y="427">deterministic development</text>
+  <text class="body" x="122" y="448">and test evidence</text>
+  <text class="body" x="122" y="469">used for orchestration checks</text>
+
+  <rect class="panel tool" x="385" y="355" width="250" height="145" rx="12"/>
+  <text class="label" x="407" y="389">SIFT SSH Backend</text>
+  <text class="body" x="407" y="417">fixed bridge script over SSH</text>
+  <text class="body" x="407" y="438">collects Windows triage artifacts</text>
+  <text class="body" x="407" y="459">from a remote x86 SIFT host</text>
+  <text class="body" x="407" y="480">with fixed arguments</text>
+
+  <rect class="panel tool" x="700" y="355" width="300" height="145" rx="12"/>
+  <text class="label" x="722" y="389">SIFT Workstation Tools</text>
+  <text class="body" x="722" y="417">Analyzemft, Amcache, Prefetch,</text>
+  <text class="body" x="722" y="438">registry, scheduled tasks,</text>
+  <text class="body" x="722" y="459">browser history, logons, YARA</text>
+  <text class="body" x="722" y="480">read-only forensic parsers</text>
+
+  <rect class="panel storage" x="170" y="585" width="235" height="125" rx="12"/>
+  <text class="label" x="192" y="619">Evidence Store</text>
+  <text class="body" x="192" y="647">raw artifacts, evidence IDs,</text>
+  <text class="body" x="192" y="668">provenance, timestamps,</text>
+  <text class="body" x="192" y="689">tool metadata</text>
+
+  <rect class="panel control" x="470" y="585" width="190" height="125" rx="12"/>
+  <text class="label" x="492" y="619">Synthesizer</text>
+  <text class="body" x="492" y="647">turns evidence into</text>
+  <text class="body" x="492" y="668">candidate findings with</text>
+  <text class="body" x="492" y="689">evidence references</text>
+
+  <rect class="panel control" x="725" y="585" width="190" height="125" rx="12"/>
+  <text class="label" x="747" y="619">Verifier</text>
+  <text class="body" x="747" y="647">checks support, blocks</text>
+  <text class="body" x="747" y="668">unsupported claims, and</text>
+  <text class="body" x="747" y="689">requests self-correction</text>
+
+  <polygon class="panel decision" points="975,610 1050,665 975,720 900,665"/>
+  <text class="label" x="926" y="659">Supported?</text>
+  <text class="body" x="928" y="682">yes / weak / no</text>
+
+  <rect class="panel output" x="420" y="790" width="155" height="95" rx="12"/>
+  <text class="label" x="442" y="824">Output Logs</text>
+  <text class="body" x="442" y="852">events.jsonl,</text>
+  <text class="body" x="442" y="873">tool_calls.jsonl</text>
+
+  <rect class="panel output" x="625" y="790" width="175" height="95" rx="12"/>
+  <text class="label" x="647" y="824">Final Findings</text>
+  <text class="body" x="647" y="852">confirmed or</text>
+  <text class="body" x="647" y="873">inference results</text>
+
+  <rect class="panel decision" x="850" y="790" width="215" height="95" rx="12"/>
+  <text class="label" x="872" y="824">Blocked Claim</text>
+  <text class="body" x="872" y="852">unsupported or hallucinated</text>
+  <text class="body" x="872" y="873">claim stays out of report</text>
+
+  <text class="small" x="914" y="360">self-correction loop</text>
+
+  <line class="arrow" x1="255" y1="250" x2="305" y2="250"/>
+  <line class="arrow" x1="525" y1="250" x2="580" y2="250"/>
+  <line class="arrow" x1="760" y1="250" x2="815" y2="250"/>
+  <line class="arrow" x1="948" y1="305" x2="948" y2="355"/>
+  <line class="arrow" x1="325" y1="427" x2="385" y2="427"/>
+  <line class="arrow" x1="635" y1="427" x2="700" y2="427"/>
+  <line class="arrow" x1="212" y1="490" x2="287" y2="585"/>
+  <line class="arrow" x1="850" y1="500" x2="287" y2="585"/>
+  <line class="arrow" x1="405" y1="647" x2="470" y2="647"/>
+  <line class="arrow" x1="660" y1="647" x2="725" y2="647"/>
+  <line class="arrow" x1="915" y1="647" x2="900" y2="647"/>
+  <line class="arrow" x1="975" y1="720" x2="975" y2="790"/>
+  <line class="arrow" x1="900" y1="665" x2="800" y2="838"/>
+  <line class="arrow" x1="975" y1="720" x2="712" y2="790"/>
+  <line class="arrow" x1="900" y1="665" x2="575" y2="838"/>
+  <path class="arrow dashed" d="M 1025 610 C 1110 500, 1015 350, 420 305"/>
+  <line class="arrow" x1="565" y1="790" x2="565" y2="710"/>
+
+  <rect class="panel" x="1160" y="130" width="390" height="790" rx="18"/>
+  <text class="section" x="1188" y="168">Guardrails and Reproducibility</text>
+
+  <rect class="panel guardrail" x="1190" y="205" width="330" height="112" rx="12"/>
+  <rect x="1210" y="222" width="132" height="30" rx="10" fill="#5b8fd8"/>
+  <text class="chip" x="1234" y="242">Prompt Guardrails</text>
+  <text class="body" x="1210" y="274">The model is instructed to avoid</text>
+  <text class="body" x="1210" y="295">unsupported claims and cite evidence.</text>
+
+  <rect class="panel guardrail" x="1190" y="340" width="330" height="148" rx="12"/>
+  <rect x="1210" y="357" width="176" height="30" rx="10" fill="#2f7a59"/>
+  <text class="chip" x="1235" y="377">Architectural Guardrails</text>
+  <text class="body" x="1210" y="409">The agent can request only named tools.</text>
+  <text class="body" x="1210" y="430">Remote access stays inside a fixed bridge.</text>
+  <text class="body" x="1210" y="451">No generic shell is exposed to the model.</text>
+  <text class="body" x="1210" y="472">Verification blocks unsupported claims.</text>
+
+  <rect class="panel guardrail" x="1190" y="512" width="330" height="132" rx="12"/>
+  <rect x="1210" y="529" width="148" height="30" rx="10" fill="#9163cf"/>
+  <text class="chip" x="1235" y="549">Evidence Integrity</text>
+  <text class="body" x="1210" y="581">Collection is read-only.</text>
+  <text class="body" x="1210" y="602">Runs keep raw output and evidence IDs.</text>
+  <text class="body" x="1210" y="623">Final claims stay traceable to artifacts.</text>
+
+  <rect class="panel" x="1190" y="675" width="330" height="215" rx="12"/>
+  <text class="section" x="1210" y="712">Typed Tool Surface</text>
+  <text class="small" x="1210" y="746">Current tools</text>
+  <text class="body" x="1210" y="778">case_info, mount_image_readonly,</text>
+  <text class="body" x="1210" y="799">timeline_mft, prefetch_summary,</text>
+  <text class="body" x="1210" y="820">amcache_summary, registry_autoruns,</text>
+  <text class="body" x="1210" y="841">scheduled_tasks, user_logons,</text>
+  <text class="body" x="1210" y="862">browser_history, yara_scan</text>
+</svg>

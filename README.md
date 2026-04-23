@@ -1,18 +1,26 @@
 # CaseTrace
 
-CaseTrace is a read-only, self-correcting DFIR agent scaffold for the FIND EVIL! hackathon. It uses a typed tool surface, a bounded orchestration loop, and evidence-linked findings so every claim can be traced back to collected artifacts.
+CaseTrace is a read-only, self-correcting DFIR agent for the FIND EVIL! hackathon. It investigates Windows evidence through typed tools instead of free-form shell access, preserves raw outputs, and links every final claim back to collected artifacts.
 
-## What Works Today
+## Quick Links
+- Demo video: https://youtu.be/4jvu_qK-r5Y
+- Architecture diagram: [PNG](./docs/architecture_diagram.png), [PDF](./docs/architecture_diagram.pdf)
+- Dataset documentation: [docs/DATASETS.md](./docs/DATASETS.md)
+- Accuracy report: [docs/ACCURACY_REPORT.md](./docs/ACCURACY_REPORT.md)
+- Validated demo run: [runs/realistic-windows-image/report.md](./runs/realistic-windows-image/report.md)
+
+## Highlights
 - `python3 -m findevil analyze ...` runs a bounded triage loop with phases for planning, collection, synthesis, verification, self-correction, and finalization.
 - `python3 -m findevil mcp-server ...` exposes typed, read-only tools over MCP stdio.
 - `python3 -m findevil evaluate ...` compares iteration 1 against the self-corrected run and writes `evaluation.json`.
 - `python3 -m findevil analyze ... --tool-backend sift-ssh ...` can collect Windows timeline, Prefetch, Amcache, registry autoruns, scheduled tasks, browser history, user logons, and YARA-style hits from a remote x86 SIFT box over SSH.
 - A sample Windows persistence case is included under [sample_cases/windows_persistence_case](./sample_cases/windows_persistence_case).
 - A no-Windows raw NTFS image demo is included under [cases/realistic-windows-image](./cases/realistic-windows-image).
+- The validated no-Windows demo run retained 4 findings, blocked 1 unsupported claim, and wrote a full audit trail under [runs/realistic-windows-image](./runs/realistic-windows-image).
 - Every tool returns structured JSON and writes raw artifacts, `events.jsonl`, `tool_calls.jsonl`, `findings.json`, `run_metadata.json`, and `report.md`.
 
 ## Quick Start
-Run the included sample case:
+Fastest local path: run the included fixture case.
 
 ```bash
 python3 -m findevil analyze \
@@ -23,7 +31,7 @@ python3 -m findevil analyze \
   --output runs/windows-persistence-case
 ```
 
-Run the benchmark harness:
+Compare iteration 1 against the self-corrected final run:
 
 ```bash
 python3 -m findevil evaluate \
@@ -34,6 +42,8 @@ python3 -m findevil evaluate \
   --output runs/windows-persistence-eval
 ```
 
+If you want the no-Windows image-backed demo shown in the submission, jump to [No-Windows Image Demo](#no-windows-image-demo).
+
 ## Outputs
 Each run creates:
 - `report.md`
@@ -43,17 +53,22 @@ Each run creates:
 - `run_metadata.json`
 - `raw/<tool_name>/*.json`
 
+The validated demo output lives under [runs/realistic-windows-image](./runs/realistic-windows-image).
+
 ## Architecture
 - The agent never receives raw shell access.
 - Collection uses typed, read-only tools only.
 - Verification blocks unsupported claims and downgrades weakly supported findings.
 - Self-correction only expands collection when corroboration is missing or a tool failed.
 
-More detail lives in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+More detail lives in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md), with upload-ready diagram assets in [PNG](./docs/architecture_diagram.png) and [PDF](./docs/architecture_diagram.pdf).
 
 Submission support docs:
 - [Dataset documentation](./docs/DATASETS.md)
 - [Accuracy report draft](./docs/ACCURACY_REPORT.md)
+- [Devpost submission copy](./docs/DEVPOST_SUBMISSION.md)
+- [Architecture diagram (PNG)](./docs/architecture_diagram.png)
+- [Architecture diagram (PDF)](./docs/architecture_diagram.pdf)
 - [Artifact-tree validation](./docs/ARTIFACT_TREE_VALIDATION.md)
 - [Generated NTFS image validation](./docs/NTFS_IMAGE_VALIDATION.md)
 - [Demo video script](./docs/DEMO_VIDEO_SCRIPT.md)

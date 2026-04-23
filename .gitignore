@@ -22,3 +22,8 @@ demo/*.mp4
 demo/*.mov
 demo/*.aiff
 demo/*.wav
+demo/*.mp3
+demo/devpost_option_*.jpg
+demo/devpost_safe_*.jpg
+demo/devpost_thumbnail.jpg
+demo/devpost_black_wallpaper.png
