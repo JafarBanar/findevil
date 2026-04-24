@@ -93,15 +93,18 @@ def detect_filesystem_offset(image_path: Path) -> str | None:
     completed = run_command(["mmls", str(image_path)])
     if completed.returncode != 0:
         return None
+    candidates: list[tuple[int, int, int, str]] = []
     for line in completed.stdout.splitlines():
         parts = line.split()
         if len(parts) < 5 or not parts[0].endswith(":"):
             continue
         if re.fullmatch(r"\d+", parts[1]):
             start = parts[1]
+            length_text = parts[3] if len(parts) >= 4 and re.fullmatch(r"\d+", parts[3]) else "0"
             description = " ".join(parts[4:])
         elif len(parts) >= 6 and re.fullmatch(r"\d+", parts[2]):
             start = parts[2]
+            length_text = parts[4] if re.fullmatch(r"\d+", parts[4]) else "0"
             description = " ".join(parts[5:])
         else:
             continue
@@ -109,7 +112,23 @@ def detect_filesystem_offset(image_path: Path) -> str | None:
         if "unallocated" in lowered or "metadata" in lowered:
             continue
         if "ntfs" in lowered or "basic data" in lowered or "windows" in lowered:
-            return start
+            score = 0
+            if "windows" in lowered:
+                score += 4
+            if "basic data" in lowered:
+                score += 2
+            if "ntfs" in lowered:
+                score += 1
+            try:
+                length = int(length_text)
+                start_sector = int(start)
+            except ValueError:
+                continue
+            candidates.append((score, length, start_sector, start))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: (item[0], item[1], item[2]))
+    return candidates[-1][3]
     return None
 
 

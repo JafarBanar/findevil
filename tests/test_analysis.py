@@ -448,6 +448,27 @@ Units are in 512-byte sectors
             offset = BRIDGE_MODULE.detect_filesystem_offset(Path("disk.E01"))
         self.assertEqual(offset, "0000002048")
 
+    def test_bridge_prefers_larger_ntfs_partition_for_windows_image(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["mmls"],
+            returncode=0,
+            stdout="""
+DOS Partition Table
+Offset Sector: 0
+Units are in 512-byte sectors
+
+      Slot      Start        End          Length       Description
+000:  Meta      0000000000   0000000000   0000000001   Primary Table (#0)
+001:  -------   0000000000   0000002047   0000002048   Unallocated
+002:  000:000   0000002048   0000206847   0000204800   NTFS / exFAT (0x07)
+003:  000:001   0000206848   0041940991   0041734144   NTFS / exFAT (0x07)
+""",
+            stderr="",
+        )
+        with patch.object(BRIDGE_MODULE, "run_command", return_value=completed):
+            offset = BRIDGE_MODULE.detect_filesystem_offset(Path("disk.E01"))
+        self.assertEqual(offset, "0000206848")
+
     def test_bridge_extracts_mft_from_image_before_analyzemft(self) -> None:
         entries = [{"path": "$MFT", "address": "0", "local_path": None, "offset": "2048"}]
         expected = [{"path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip", "action": "observed"}]
