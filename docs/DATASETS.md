@@ -111,6 +111,27 @@ bash cases/realistic-windows-image/run_analysis.sh
 
 **STATUS:** Ready without Windows. The generated raw NTFS image demo is implemented and validated. A native Windows OS image or external public case is optional future validation.
 
+## Public Native-Windows Validation Case
+
+- Name: `cfreds-data-leakage-pc`
+- Path: `cases/cfreds-data-leakage-pc`
+- Remote disk path: `/home/sift/public_cases/cfreds-data-leakage-pc/image/cfreds_2015_data_leakage_pc.dd`
+- Source: NIST CFReDS Data Leakage Case
+- Overview: `https://cfreds-archive.nist.gov/data_leakage_case/data-leakage-case.html`
+- Ground truth: `https://cfreds-archive.nist.gov/data_leakage_case/leakage-answers.pdf`
+- Format: native Windows raw DD image analyzed remotely through `sift-ssh`
+- Size: 20 GB raw DD image
+- Helper script: `scripts/download_cfreds_data_leakage_case.sh`
+- Run output:
+  - `runs/cfreds-data-leakage-pc-v3`
+- Validation:
+  - 10/10 tool executions succeeded
+  - 0 retained findings
+  - 0 verification issues
+  - Result is valuable as a public coverage check, not as a success-case demo
+- Key lesson:
+  - The current tool surface misses important Windows 7 artifacts in this dataset, especially Internet Explorer history, Google Drive sync traces, USB activity, and email artifacts.
+
 ### Optional Future Native/Public Case
 - Name: TBD
 - Source: Public DFIR dataset, CTF, or documented forensic case
@@ -128,11 +149,11 @@ bash cases/realistic-windows-image/run_analysis.sh
 - ✅ Generated NTFS image workflow when no Windows host is available
 
 ### Optional Next Steps
-1. Download a Windows forensic dataset with known ground truth
-2. Store at `/cases/<case_name>/disk.E01`
-3. Run: `python3 -m findevil analyze --case /cases/<case_name> --disk /cases/<case_name>/disk.E01 --profile windows --output runs/real-case-final`
-4. Document findings against known artifacts
-5. Update ACCURACY_REPORT.md with evaluation results
+1. Expand the collector surface for Internet Explorer, Google Drive, USB, Outlook, and deleted-record recovery.
+2. Re-run `cases/cfreds-data-leakage-pc/run_analysis.sh`
+3. Compare results against the public NIST answers PDF.
+4. Update `docs/CFREDS_DATA_LEAKAGE_VALIDATION.md` and `docs/ACCURACY_REPORT.md`
+5. Repeat the same pattern for another public Windows case
 
 ### Example Public Sources
 - DFIR CTF (if available)

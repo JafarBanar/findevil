@@ -24,8 +24,9 @@ SUPPORTED_TOOLS = {
     "user_logons",
     "yara_scan",
 }
-SUSPICIOUS_SUFFIXES = (".ps1", ".js", ".hta", ".vbs", ".exe", ".zip")
+SUSPICIOUS_SUFFIXES = (".ps1", ".js", ".hta", ".vbs", ".zip")
 SUSPICIOUS_MARKERS = ("appdata", "downloads", "temp", "programdata")
+SUSPICIOUS_NAME_MARKERS = ("payload", "update", "invoice", "autorun", "theme", "runme", "dropper")
 SUSPICIOUS_URL_MARKERS = ("invoice", "update", "login", "verify", "cdn-", ".zip", ".js", ".hta", ".ps1", "payload", "c2")
 MAX_SCAN_BYTES = 2 * 1024 * 1024
 
@@ -188,8 +189,7 @@ def timeline_from_entries(disk_path: Path, entries: list[dict[str, str | None]])
     # Fallback: extract suspicious file timeline from entries
     for entry in entries:
         path_text = entry_path(entry)
-        lowered = path_text.lower()
-        if not lowered.endswith(SUSPICIOUS_SUFFIXES) and not any(marker in lowered for marker in SUSPICIOUS_MARKERS):
+        if not is_suspicious_path(path_text):
             continue
         records.append(
             {
@@ -234,7 +234,13 @@ def is_suspicious_path(path_text: str | None) -> bool:
     if not path_text:
         return False
     lowered = path_text.lower()
-    return lowered.endswith(SUSPICIOUS_SUFFIXES) or any(marker in lowered for marker in SUSPICIOUS_MARKERS)
+    if any(marker in lowered for marker in SUSPICIOUS_MARKERS):
+        return True
+    if lowered.endswith(SUSPICIOUS_SUFFIXES):
+        return True
+    if lowered.endswith(".exe") and any(marker in lowered for marker in SUSPICIOUS_NAME_MARKERS):
+        return True
+    return False
 
 
 def is_suspicious_url(url: str | None) -> bool:

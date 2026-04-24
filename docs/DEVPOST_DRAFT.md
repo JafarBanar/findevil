@@ -56,7 +56,7 @@ Instead of giving the model arbitrary shell access, CaseTrace exposes typed fore
 
 ## What's Next
 
-- Validate against a native Windows OS image or public DFIR dataset with known ground truth
+- Expand collector coverage, then improve the public NIST CFReDS Windows validation result
 - Add more Windows artifact parsers behind the same typed tool boundary
 - Package the SIFT image-builder workflow into one command
 - Improve report visualizations for judges and analysts

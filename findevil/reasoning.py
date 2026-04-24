@@ -39,7 +39,29 @@ SUSPICIOUS_EXECUTABLES = {
     "regsvr32.exe",
 }
 
+CLOUD_STORAGE_EXECUTABLES = {
+    "googledrivesync.exe",
+    "dropbox.exe",
+    "onedrive.exe",
+    "onedrivesetup.exe",
+    "icloudsetup.exe",
+}
+
+ANTI_FORENSICS_EXECUTABLES = {
+    "ccleaner.exe",
+    "ccleaner64.exe",
+    "eraser.exe",
+}
+
 SUSPICIOUS_PATH_MARKERS = ("\\appdata\\", "\\temp\\", "\\downloads\\", "\\programdata\\")
+DATA_TRANSFER_PATH_MARKERS = (
+    "\\google drive\\",
+    "\\appdata\\google\\drive\\",
+    "\\program files\\google\\drive\\",
+    "\\program files (x86)\\google\\drive\\",
+    "\\downloads\\googledrivesync.exe",
+    "\\downloads\\icloudsetup.exe",
+)
 SUSPICIOUS_URL_MARKERS = ("invoice", "update", "login", "verify", "cdn-", ".zip", ".js", ".hta", ".ps1")
 
 
@@ -104,6 +126,8 @@ class LocalReasoningBackend:
         findings.extend(self._execution_findings(state, iteration))
         findings.extend(self._delivery_findings(state, iteration))
         findings.extend(self._persistence_findings(state, iteration))
+        findings.extend(self._cloud_transfer_findings(state, iteration))
+        findings.extend(self._anti_forensics_findings(state, iteration))
         findings.extend(self._detection_findings(state, iteration))
         findings.extend(self._speculative_findings(state, iteration))
         return findings
@@ -200,6 +224,73 @@ class LocalReasoningBackend:
                 evidence_ids=sorted(set(evidence)),
                 sources=_unique_sources(evidence, state),
                 confidence=min(0.65 + (0.1 * len(set(evidence))), 0.95),
+                analyst_notes=f"Iteration {iteration}: {notes[0]}",
+            )
+        ]
+
+    def _cloud_transfer_findings(self, state: AnalysisState, iteration: int) -> list[Finding]:
+        evidence: list[str] = []
+        notes: list[str] = []
+        for item in _tool_evidence(state, "prefetch_summary") + _tool_evidence(state, "amcache_summary"):
+            executable = str(item.data.get("executable", item.data.get("program_name", ""))).lower()
+            path_blob = " ".join(str(value) for value in item.data.values()).lower()
+            if executable in CLOUD_STORAGE_EXECUTABLES or any(marker in path_blob for marker in DATA_TRANSFER_PATH_MARKERS):
+                evidence.append(item.id)
+                notes.append(item.summary)
+
+        for item in _tool_evidence(state, "timeline_mft"):
+            path_text = str(item.data.get("path", "")).lower()
+            if any(marker in path_text for marker in DATA_TRANSFER_PATH_MARKERS):
+                evidence.append(item.id)
+                notes.append(item.summary)
+
+        if not evidence:
+            return []
+
+        title = "Consumer cloud-storage activity observed on the endpoint"
+        return [
+            Finding(
+                id=safe_slug(title),
+                title=title,
+                status="needs_review",
+                severity="medium",
+                summary="Execution or file-system evidence references consumer cloud-storage tooling that may support data staging or transfer in case context.",
+                evidence_ids=sorted(set(evidence)),
+                sources=_unique_sources(evidence, state),
+                confidence=min(0.55 + (0.08 * len(set(evidence))), 0.9),
+                analyst_notes=f"Iteration {iteration}: {notes[0]}",
+            )
+        ]
+
+    def _anti_forensics_findings(self, state: AnalysisState, iteration: int) -> list[Finding]:
+        evidence: list[str] = []
+        notes: list[str] = []
+        for item in _tool_evidence(state, "prefetch_summary") + _tool_evidence(state, "amcache_summary"):
+            executable = str(item.data.get("executable", item.data.get("program_name", ""))).lower()
+            if executable in ANTI_FORENSICS_EXECUTABLES:
+                evidence.append(item.id)
+                notes.append(item.summary)
+
+        for item in _tool_evidence(state, "timeline_mft"):
+            path_text = str(item.data.get("path", "")).lower()
+            if any(name in path_text for name in ANTI_FORENSICS_EXECUTABLES):
+                evidence.append(item.id)
+                notes.append(item.summary)
+
+        if not evidence:
+            return []
+
+        title = "Potential anti-forensics tooling observed on the endpoint"
+        return [
+            Finding(
+                id=safe_slug(title),
+                title=title,
+                status="needs_review",
+                severity="high",
+                summary="Execution or file-system evidence references cleanup tooling that may have been used to remove traces.",
+                evidence_ids=sorted(set(evidence)),
+                sources=_unique_sources(evidence, state),
+                confidence=min(0.6 + (0.08 * len(set(evidence))), 0.9),
                 analyst_notes=f"Iteration {iteration}: {notes[0]}",
             )
         ]

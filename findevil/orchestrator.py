@@ -167,6 +167,11 @@ class AnalysisOrchestrator:
 
     def _should_self_correct(self, iteration: int, max_iterations: int, state: AnalysisState) -> bool:
         if iteration >= max_iterations or not state.issues:
+            if iteration >= max_iterations:
+                return False
+            remaining_tools = [tool for tool in ALL_CORE_TOOLS if tool not in state.tool_results]
+            if remaining_tools and not state.findings:
+                return True
             return False
         remaining_tools = [tool for tool in ALL_CORE_TOOLS if tool not in state.tool_results]
         if remaining_tools:
@@ -232,4 +237,3 @@ class AnalysisOrchestrator:
                 data=data,
             )
         )
-

@@ -1,0 +1,24 @@
+{
+  "analyst": "CaseTrace Public Validation",
+  "case_id": "cfreds-data-leakage-pc",
+  "created": "2026-04-23",
+  "expected_artifacts": [
+    "timeline_mft",
+    "registry_autoruns",
+    "scheduled_tasks",
+    "prefetch_summary",
+    "amcache_summary",
+    "browser_history",
+    "user_logons",
+    "yara_scan"
+  ],
+  "format": "public_windows_dd_image_remote_only",
+  "image_path": "cases/cfreds-data-leakage-pc/cfreds_2015_data_leakage_pc.dd",
+  "target_host": "NIST CFReDS Data Leakage Case Windows 7 PC",
+  "notes": "This case uses the public NIST CFReDS Data Leakage Case PC image with published answers. The raw DD image is intended to live on the SIFT VM and is analyzed remotely through the sift-ssh backend.",
+  "ground_truth_urls": [
+    "https://cfreds-archive.nist.gov/data_leakage_case/data-leakage-case.html",
+    "https://cfreds-archive.nist.gov/data_leakage_case/leakage-answers.pdf"
+  ],
+  "source": "NIST CFReDS Data Leakage Case PC image (split 7z volumes extracted to a raw DD image on the SIFT VM)"
+}

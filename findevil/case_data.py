@@ -52,6 +52,11 @@ class CaseDataset:
             return "read_only_image"
         if self.disk_path.exists():
             return "existing_path"
+        if self.request.tool_backend == "sift-ssh" and self.request.remote_disk_path:
+            remote_suffix = Path(self.request.remote_disk_path).suffix.lower()
+            if remote_suffix in {".e01", ".ex01", ".dd", ".raw", ".img"}:
+                return "remote_read_only_image"
+            return "remote_existing_path"
         return "fixture_only"
 
     def case_metadata(self) -> dict[str, Any]:
@@ -66,4 +71,3 @@ class CaseDataset:
             "expected_artifacts": sorted(self.expected_artifacts()),
             "notes": self.manifest.get("notes", ""),
         }
-

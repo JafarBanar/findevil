@@ -7,7 +7,8 @@ CaseTrace is a read-only, self-correcting DFIR agent for the FIND EVIL! hackatho
 - Architecture diagram: [PNG](./docs/architecture_diagram.png), [PDF](./docs/architecture_diagram.pdf)
 - Dataset documentation: [docs/DATASETS.md](./docs/DATASETS.md)
 - Accuracy report: [docs/ACCURACY_REPORT.md](./docs/ACCURACY_REPORT.md)
-- Validated demo run: [runs/realistic-windows-image/report.md](./runs/realistic-windows-image/report.md)
+- Public Windows validation: [docs/CFREDS_DATA_LEAKAGE_VALIDATION.md](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md)
+- Validated demo notes: [docs/NTFS_IMAGE_VALIDATION.md](./docs/NTFS_IMAGE_VALIDATION.md)
 
 ## Highlights
 - `python3 -m findevil analyze ...` runs a bounded triage loop with phases for planning, collection, synthesis, verification, self-correction, and finalization.
@@ -16,7 +17,9 @@ CaseTrace is a read-only, self-correcting DFIR agent for the FIND EVIL! hackatho
 - `python3 -m findevil analyze ... --tool-backend sift-ssh ...` can collect Windows timeline, Prefetch, Amcache, registry autoruns, scheduled tasks, browser history, user logons, and YARA-style hits from a remote x86 SIFT box over SSH.
 - A sample Windows persistence case is included under [sample_cases/windows_persistence_case](./sample_cases/windows_persistence_case).
 - A no-Windows raw NTFS image demo is included under [cases/realistic-windows-image](./cases/realistic-windows-image).
-- The validated no-Windows demo run retained 4 findings, blocked 1 unsupported claim, and wrote a full audit trail under [runs/realistic-windows-image](./runs/realistic-windows-image).
+- A public native-Windows validation case wrapper is included under [cases/cfreds-data-leakage-pc](./cases/cfreds-data-leakage-pc).
+- The validated no-Windows demo run retained 4 findings, blocked 1 unsupported claim, and is summarized in [docs/NTFS_IMAGE_VALIDATION.md](./docs/NTFS_IMAGE_VALIDATION.md).
+- A public NIST CFReDS validation run is documented in [docs/CFREDS_DATA_LEAKAGE_VALIDATION.md](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md).
 - Every tool returns structured JSON and writes raw artifacts, `events.jsonl`, `tool_calls.jsonl`, `findings.json`, `run_metadata.json`, and `report.md`.
 
 ## Quick Start
@@ -53,7 +56,7 @@ Each run creates:
 - `run_metadata.json`
 - `raw/<tool_name>/*.json`
 
-The validated demo output lives under [runs/realistic-windows-image](./runs/realistic-windows-image).
+The validated demo output is summarized in [docs/NTFS_IMAGE_VALIDATION.md](./docs/NTFS_IMAGE_VALIDATION.md).
 
 ## Architecture
 - The agent never receives raw shell access.
@@ -66,6 +69,7 @@ More detail lives in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md), with upload
 Submission support docs:
 - [Dataset documentation](./docs/DATASETS.md)
 - [Accuracy report draft](./docs/ACCURACY_REPORT.md)
+- [Public Windows validation notes](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md)
 - [Devpost submission copy](./docs/DEVPOST_SUBMISSION.md)
 - [Architecture diagram (PNG)](./docs/architecture_diagram.png)
 - [Architecture diagram (PDF)](./docs/architecture_diagram.pdf)
@@ -89,6 +93,16 @@ bash cases/realistic-windows-image/run_analysis.sh
 ```
 
 The validated local run is `runs/realistic-windows-image`.
+
+## Public Ground-Truth Validation
+Use the public NIST CFReDS Windows image wrapper when you want a native-Windows honesty check instead of the synthetic demo path:
+
+```bash
+bash scripts/download_cfreds_data_leakage_case.sh
+bash cases/cfreds-data-leakage-pc/run_analysis.sh
+```
+
+The current public validation notes live in [docs/CFREDS_DATA_LEAKAGE_VALIDATION.md](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md). The latest run is `runs/cfreds-data-leakage-pc-v3`.
 
 Render the local draft demo video:
 

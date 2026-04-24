@@ -67,7 +67,7 @@ Because I did not have a Windows host available for the final demo, I created a 
 - Running x86_64 SIFT on Apple Silicon through UTM is slow.
 - SIFT setup on the VM needed extra hardening around Ubuntu package state.
 - The obvious hackathon shortcut would have been to let the model make broad claims from partial evidence, but that would defeat the point of a DFIR tool.
-- I did not have Windows available for a native OS image run, so I had to design a no-Windows image-backed workflow that still exercises real forensic parsing and keeps the claims honest.
+- I did not have Windows available for the main demo path, so I designed a no-Windows image-backed workflow that still exercises real forensic parsing and keeps the claims honest. After submission prep, I also added a public native-Windows validation run against the NIST CFReDS Data Leakage Case to measure real coverage gaps.
 
 ## What I learned
 
@@ -78,7 +78,7 @@ Because I did not have a Windows host available for the final demo, I created a 
 
 ## What's next
 
-- Validate against a native Windows OS image or a public DFIR dataset with known ground truth.
+- Expand collector coverage for Internet Explorer, Google Drive, USB, Outlook, and deleted-record recovery, then re-run the public NIST Windows case.
 - Expand the typed artifact surface while preserving the same guardrails.
 - Improve visual reporting for analysts and judges.
 - Package the no-Windows image workflow into an even simpler one-command demo.

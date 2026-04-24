@@ -251,16 +251,21 @@ def mount_image_readonly_tool(context: ToolContext, inputs: dict[str, Any]) -> T
     started_at = now_utc_iso()
     start_time = time.perf_counter()
     access_mode = context.dataset.disk_access_mode()
+    mount_path = context.request.disk_path
+    if access_mode == "fixture_only":
+        mount_path = context.request.case_path
+    elif access_mode.startswith("remote_") and context.request.remote_disk_path:
+        mount_path = context.request.remote_disk_path
     mount_record = {
         "access_mode": access_mode,
         "disk_path": context.request.disk_path,
-        "mount_path": context.request.case_path if access_mode == "fixture_only" else context.request.disk_path,
+        "mount_path": mount_path,
         "tool_backend": context.request.tool_backend,
         "remote_host": context.request.remote_host,
         "remote_disk_path": context.request.remote_disk_path,
         "read_only_guardrails": [
             "No write-capable shell execution is exposed.",
-            "Tools only read fixture artifacts or case metadata.",
+            "Tools only read fixture artifacts or typed local/remote case data.",
             "All tool output is copied into run-local artifacts for auditability.",
         ],
         "kind": "case_access",

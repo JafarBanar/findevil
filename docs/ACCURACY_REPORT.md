@@ -13,6 +13,7 @@ This report is a living assessment of CaseTrace accuracy. The current final demo
 | `runs/remote-case` | fixture case | remote SIFT VM (sift-ssh) | Completed; remote backend execution confirmed. |
 | `runs/realistic-windows-case-script` | controlled artifact tree | remote SIFT VM (sift-ssh) | Completed; 10/10 tools succeeded, 4 findings retained, 1 unsupported claim blocked. |
 | `runs/realistic-windows-image` | generated raw NTFS image | remote SIFT VM (sift-ssh) | Completed; 10/10 tools succeeded, 4 findings retained, 1 unsupported claim blocked. |
+| `runs/cfreds-data-leakage-pc-v3` | NIST CFReDS Data Leakage Case PC image | remote SIFT VM (sift-ssh) | Completed; 10/10 tool executions succeeded, 0 retained findings, 0 verification issues. Public native-Windows validation now exists and exposes coverage gaps. |
 
 ## Confirmed Strengths
 
@@ -26,19 +27,27 @@ This report is a living assessment of CaseTrace accuracy. The current final demo
 - Real SIFT/forensic parsers are callable from the remote bridge, including analyzemft, Regripper-backed hives, scheduled task XML, browser SQLite history, Security.evtx logons, and YARA-style suspicious file scanning.
 - Tool coverage across 2 iterations spans 10 different forensic tools.
 - No-Windows image path works: SIFT generated a 128 MB raw NTFS image from the controlled artifact tree and CaseTrace analyzed that image through `sift-ssh`.
+- Public native-Windows validation now exists: CaseTrace analyzed the NIST CFReDS Data Leakage Case PC image end to end through `sift-ssh`.
 
 ## Known False Positives
 
 - None confirmed yet on a real forensic dataset.
 - None observed in the controlled artifact-tree smoke run.
 - None observed in the generated NTFS image run.
+- An intermediate public-case run (`runs/cfreds-data-leakage-pc-v2`) falsely flagged `C:\Boot\memtest.exe`; the remote content scan was tightened and the final public validation run (`v3`) removed that false positive.
 - Fixture findings are intentionally synthetic and should not be treated as real-world accuracy claims.
 
 ## Known Misses
 
-- Not yet measured on a native Windows OS image or public real-world case.
+- Public native-Windows validation measured significant misses on the NIST CFReDS Data Leakage Case PC image.
 - Controlled artifact-tree smoke run detected all 8 expected artifact categories.
 - Generated NTFS image run detected all 8 expected artifact categories.
+- `runs/cfreds-data-leakage-pc-v3` missed the major public answer-key behaviors because the current typed collectors do not yet parse:
+  - Internet Explorer / WebCache artifacts
+  - Google Drive sync logs and databases
+  - USB/removable-media artifacts
+  - Outlook/email artifacts
+  - deleted-record recovery targets used by the answer key
 
 ## What's Actually Complete vs. What Remains
 
@@ -50,18 +59,18 @@ This report is a living assessment of CaseTrace accuracy. The current final demo
 - ✓ Self-correction behavior: blocks unsupported claims (demonstrated on fixture)
 - ✓ Controlled artifact-tree smoke run: 10/10 tools successful, 8/8 expected artifact categories produced evidence
 - ✓ Generated raw NTFS image run: 10/10 tools successful, 8/8 expected artifact categories produced evidence
+- ✓ Public native-Windows validation: NIST CFReDS Data Leakage Case PC image analyzed through the SIFT bridge
 
 **INCOMPLETE:**
-- ✗ Native Windows OS image analysis: no Windows-installed disk image has been analyzed yet
-- ✗ Public real-world accuracy: claims about broader true positive rate, false positive rate, and missed artifacts still require an external case with ground truth
-- ✗ Real-world incident credibility: fixture, artifact-tree, and generated-image findings should not be treated as real incident accuracy
+- ✗ Public real-world detection coverage remains weak for Windows 7 leakage scenarios
+- ✗ Current typed tool surface does not yet recover the main ground-truth artifacts in the NIST CFReDS public case
+- ✗ Real-world incident credibility is still limited by collector breadth, even though public/native-image validation now exists
 
-**OPTIONAL NEXT STEP AFTER SUBMISSION:**
-1. Obtain a native Windows or public DFIR image with known ground truth.
-2. Run: `python3 -m findevil analyze --case <name> --disk <image.E01> --profile windows --output runs/real-case-analysis [--tool-backend sift-ssh --remote-host ...]`
-3. Review findings against known ground truth.
-4. Document false positives, misses, and accuracy metrics.
-5. Update this report with public/native-image evaluation results.
+**NEXT STEP AFTER SUBMISSION:**
+1. Add collectors for Internet Explorer/WebCache, Google Drive sync logs, USB artifacts, Outlook/email traces, and deleted-record recovery.
+2. Re-run `cases/cfreds-data-leakage-pc/run_analysis.sh`
+3. Measure matches, misses, and false positives against the NIST answer key.
+4. Update this report with improved public-case coverage metrics.
 
 ## Blocked Hallucinations
 
@@ -87,7 +96,7 @@ Current fixture behavior blocks this unsupported finding:
 - The included `image.E01` is a development fixture marker, not a full disk image.
 - The controlled artifact-tree case is reproducible and useful for demos, but it is not a disk image.
 - The generated NTFS image is a real filesystem image, but it is not a native Windows OS installation.
-- Broad IR accuracy cannot be claimed until CaseTrace is run against a native/public Windows disk image with known ground truth.
+- Broad IR accuracy still cannot be claimed even though a native/public Windows disk image has now been analyzed, because the current collector set misses the primary answer-key artifacts in that case.
 - Some SIFT tools may be unavailable until the full SIFT installation completes.
 - The local Apple Silicon UTM path uses x86_64 emulation and is slower than a native x86 SIFT host.
 

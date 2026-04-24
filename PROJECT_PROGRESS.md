@@ -1,6 +1,6 @@
 # CaseTrace Project Progress
 
-Last updated: 2026-04-22
+Last updated: 2026-04-24
 
 Use this file as the project control board. Change `[ ]` to `[x]` when a task is finished.
 
@@ -35,8 +35,9 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] No-Windows image path completed: generated a 128 MB raw NTFS image at `cases/realistic-windows-image/disk.img` using SIFT.
 - [x] Image-backed SIFT run completed: `runs/realistic-windows-image`.
 - [x] Generated NTFS image validation completed: 10/10 tools succeeded, 8/8 artifact categories produced evidence, 1 unsupported claim blocked.
-- [ ] Native Windows OS demo image remains optional future validation if a Windows VM or public dataset becomes available.
-- [ ] Public/native real-world accuracy can only be claimed after an external Windows case with ground truth is analyzed.
+- [x] Public native-Windows validation completed against the NIST CFReDS Data Leakage Case PC image.
+- [x] External Windows case with public ground truth has been analyzed (`runs/cfreds-data-leakage-pc-v3`).
+- [ ] Public/native real-world accuracy is now measured, but collector coverage is still too weak to claim strong real-world accuracy.
 
 ## Next Steps To Finish
 
@@ -47,7 +48,7 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Run `bash cases/realistic-windows-image/run_analysis.sh`.
 - [x] Validate `runs/realistic-windows-image/report.md`, `findings.json`, `events.jsonl`, and `tool_calls.jsonl`.
 - [x] Create validation documentation for the generated NTFS image.
-- [ ] Optional only: create or attach a native Windows 10/11 VM or public Windows forensic image.
+- [x] Optional path completed via a public Windows forensic image (`cfreds-data-leakage-pc`).
 - [ ] Optional only: run `scripts/create_windows_artifacts.ps1` inside a Windows VM as Administrator.
 - [ ] Optional only: export or convert a native Windows disk to raw/E01 format.
 - [x] Run `bash cases/realistic-windows-case/run_analysis.sh` for the controlled artifact-tree case.
@@ -55,6 +56,9 @@ Use this file as the project control board. Change `[ ]` to `[x]` when a task is
 - [x] Create validation documentation comparing planted artifact-tree artifacts against detected findings.
 - [x] Update `docs/ACCURACY_REPORT.md`, `docs/DATASETS.md`, and `docs/DEVPOST_DRAFT.md` with the artifact-tree results.
 - [x] Update `docs/ACCURACY_REPORT.md`, `docs/DATASETS.md`, `docs/DEVPOST_DRAFT.md`, and `README.md` with the generated NTFS image results.
+- [x] Add a public native-Windows validation wrapper and helper script for the NIST CFReDS Data Leakage Case.
+- [x] Run `bash cases/cfreds-data-leakage-pc/run_analysis.sh` against the public NIST Windows image.
+- [x] Create validation notes for the NIST CFReDS public case and update README, dataset docs, and accuracy docs.
 - [x] Prepare `docs/DEMO_VIDEO_SCRIPT.md` and `scripts/print_demo_highlights.sh` for recording the final demo.
 - [x] Generate an under-5-minute draft demo video from `runs/realistic-windows-image`: `demo/casetrace_demo.mp4`.
 

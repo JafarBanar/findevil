@@ -10,11 +10,15 @@ import unittest
 from unittest.mock import patch
 
 from findevil import remote as remote_module
+from findevil.case_data import CaseDataset
 from findevil.evaluation import evaluate_request
 from findevil.mcp_server import CaseTraceMCPServer
 from findevil.orchestrator import AnalysisOrchestrator
 from findevil.remote import RemoteSIFTRunner
 from findevil.schemas import CaseRequest
+from findevil.tools import mount_image_readonly_tool, ToolContext
+from findevil.store import RunArtifactStore
+from findevil.schemas import AnalysisState
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -184,6 +188,52 @@ class AnalysisTests(unittest.TestCase):
         self.assertIn("StrictHostKeyChecking=no", command)
         self.assertIn("UserKnownHostsFile=/dev/null", command)
         self.assertIn("sift@127.0.0.1", command)
+
+    def test_remote_only_disk_path_is_reported_as_remote_image(self) -> None:
+        request = CaseRequest(
+            case_path=str(SAMPLE_CASE),
+            disk_path=str(SAMPLE_CASE / "missing-public-image.dd"),
+            output_path="runs/unused",
+            tool_backend="sift-ssh",
+            remote_host="127.0.0.1",
+            remote_user="sift",
+            remote_workdir="/home/sift/findevil",
+            remote_disk_path="/home/sift/public_cases/cfreds-data-leakage-pc/cfreds_2015_data_leakage_pc.dd",
+        )
+        dataset = CaseDataset(request)
+
+        self.assertEqual(dataset.disk_access_mode(), "remote_read_only_image")
+
+    def test_mount_tool_uses_remote_disk_path_for_remote_only_image(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            request = CaseRequest(
+                case_path=str(SAMPLE_CASE),
+                disk_path=str(SAMPLE_CASE / "missing-public-image.dd"),
+                output_path=str(Path(temp_dir) / "run"),
+                tool_backend="sift-ssh",
+                remote_host="127.0.0.1",
+                remote_user="sift",
+                remote_workdir="/home/sift/findevil",
+                remote_disk_path="/home/sift/public_cases/cfreds-data-leakage-pc/cfreds_2015_data_leakage_pc.dd",
+            )
+            store = RunArtifactStore(request.output_path)
+            store.prepare()
+            execution = mount_image_readonly_tool(
+                ToolContext(
+                    request=request,
+                    dataset=CaseDataset(request),
+                    store=store,
+                    state=AnalysisState(case_id="remote-only"),
+                    iteration=1,
+                ),
+                {},
+            )
+
+            self.assertEqual(execution.result.data["records"][0]["access_mode"], "remote_read_only_image")
+            self.assertEqual(
+                execution.result.data["records"][0]["mount_path"],
+                "/home/sift/public_cases/cfreds-data-leakage-pc/cfreds_2015_data_leakage_pc.dd",
+            )
 
     def test_remote_runner_parses_json_payload(self) -> None:
         request = CaseRequest(
