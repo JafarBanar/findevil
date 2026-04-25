@@ -1,0 +1,609 @@
+{
+  "issues": [
+    {
+      "blocked": true,
+      "evidence_ids": [
+        "browser-history-1-0b44ee91cd"
+      ],
+      "finding_id": "credential-theft-likely-followed-the-suspicious-browser-session",
+      "id": "verification-12eedc203d",
+      "issue_type": "unsupported_claim",
+      "recommended_action": "gather corroborating evidence",
+      "severity": "high",
+      "summary": "Blocked speculative finding 'Credential theft likely followed the suspicious browser session' because no credential-access evidence exists."
+    }
+  ],
+  "iteration_history": [
+    {
+      "findings": [
+        {
+          "analyst_notes": "Iteration 1: powershell.exe executed 7 times.",
+          "confidence": 0.5,
+          "evidence_ids": [
+            "prefetch-powershell-update"
+          ],
+          "id": "suspicious-script-execution-observed-on-the-endpoint",
+          "severity": "high",
+          "sources": [
+            "prefetch_summary"
+          ],
+          "status": "needs_review",
+          "summary": "Execution telemetry suggests a script or living-off-the-land binary ran from a suspicious location.",
+          "title": "Suspicious script execution observed on the endpoint"
+        },
+        {
+          "analyst_notes": "Iteration 1: Visited https://cdn-login-check.example/invoice_update.zip.",
+          "confidence": 0.5,
+          "evidence_ids": [
+            "browser-history-1-0b44ee91cd",
+            "browser-history-2-44c843441b"
+          ],
+          "id": "likely-web-delivery-of-a-suspicious-payload",
+          "severity": "medium",
+          "sources": [
+            "browser_history"
+          ],
+          "status": "needs_review",
+          "summary": "Browser activity suggests a suspicious payload delivery path.",
+          "title": "Likely web delivery of a suspicious payload"
+        }
+      ],
+      "issues": [
+        {
+          "blocked": false,
+          "evidence_ids": [
+            "browser-history-1-0b44ee91cd",
+            "browser-history-2-44c843441b"
+          ],
+          "finding_id": "likely-web-delivery-of-a-suspicious-payload",
+          "id": "verification-6d868034d1",
+          "issue_type": "missing_corroboration",
+          "recommended_action": "gather corroborating evidence",
+          "severity": "medium",
+          "summary": "Delivery finding 'Likely web delivery of a suspicious payload' lacks on-disk corroboration."
+        },
+        {
+          "blocked": true,
+          "evidence_ids": [
+            "browser-history-1-0b44ee91cd"
+          ],
+          "finding_id": "credential-theft-likely-followed-the-suspicious-browser-session",
+          "id": "verification-12eedc203d",
+          "issue_type": "unsupported_claim",
+          "recommended_action": "gather corroborating evidence",
+          "severity": "high",
+          "summary": "Blocked speculative finding 'Credential theft likely followed the suspicious browser session' because no credential-access evidence exists."
+        }
+      ],
+      "iteration": 1,
+      "rationale": "Baseline triage starts with user activity, browser evidence, and execution traces.",
+      "tools_run": [
+        "case_info",
+        "mount_image_readonly",
+        "user_logons",
+        "browser_history",
+        "prefetch_summary"
+      ]
+    },
+    {
+      "findings": [
+        {
+          "analyst_notes": "Iteration 2: powershell.exe executed 7 times.",
+          "confidence": 0.74,
+          "evidence_ids": [
+            "amcache-summary-1-bfde8d03fc",
+            "prefetch-powershell-update"
+          ],
+          "id": "suspicious-script-execution-observed-on-the-endpoint",
+          "severity": "high",
+          "sources": [
+            "amcache_summary",
+            "prefetch_summary"
+          ],
+          "status": "inference",
+          "summary": "Execution telemetry suggests a script or living-off-the-land binary ran from a suspicious location.",
+          "title": "Suspicious script execution observed on the endpoint"
+        },
+        {
+          "analyst_notes": "Iteration 2: Visited https://cdn-login-check.example/invoice_update.zip.",
+          "confidence": 0.85,
+          "evidence_ids": [
+            "browser-history-1-0b44ee91cd",
+            "browser-history-2-44c843441b",
+            "timeline-mft-2-90342805bb"
+          ],
+          "id": "likely-web-delivery-of-a-suspicious-payload",
+          "severity": "medium",
+          "sources": [
+            "browser_history",
+            "timeline_mft"
+          ],
+          "status": "confirmed",
+          "summary": "Browser activity and on-disk artifacts both reference invoice_update.zip, suggesting payload delivery.",
+          "title": "Likely web delivery of a suspicious payload"
+        },
+        {
+          "analyst_notes": "Iteration 2: Autorun entry HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\ThemeUpdater launches powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1.",
+          "confidence": 0.8500000000000001,
+          "evidence_ids": [
+            "registry-autoruns-1-e6b70b4552",
+            "scheduled-tasks-1-bfc2d01746"
+          ],
+          "id": "persistence-mechanism-likely-established-on-the-host",
+          "severity": "high",
+          "sources": [
+            "registry_autoruns",
+            "scheduled_tasks"
+          ],
+          "status": "confirmed",
+          "summary": "Persistence-related telemetry points to a suspicious autorun or scheduled task.",
+          "title": "Persistence mechanism likely established on the host"
+        },
+        {
+          "analyst_notes": "Iteration 2: YARA rule Suspicious_PowerShell_Downloader matched C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1.",
+          "confidence": 0.74,
+          "evidence_ids": [
+            "yara-scan-1-ac33edc758"
+          ],
+          "id": "known-suspicious-artifact-matched-detection-rules",
+          "severity": "high",
+          "sources": [
+            "yara_scan"
+          ],
+          "status": "inference",
+          "summary": "At least one artifact matched a detection signature during scanning.",
+          "title": "Known suspicious artifact matched detection rules"
+        }
+      ],
+      "issues": [
+        {
+          "blocked": true,
+          "evidence_ids": [
+            "browser-history-1-0b44ee91cd"
+          ],
+          "finding_id": "credential-theft-likely-followed-the-suspicious-browser-session",
+          "id": "verification-12eedc203d",
+          "issue_type": "unsupported_claim",
+          "recommended_action": "gather corroborating evidence",
+          "severity": "high",
+          "summary": "Blocked speculative finding 'Credential theft likely followed the suspicious browser session' because no credential-access evidence exists."
+        }
+      ],
+      "iteration": 2,
+      "rationale": "Self-correction expands collection to corroborate or recover unsupported claims.",
+      "tools_run": [
+        "amcache_summary",
+        "timeline_mft",
+        "yara_scan",
+        "registry_autoruns",
+        "scheduled_tasks"
+      ]
+    }
+  ],
+  "request": {
+    "case_id": null,
+    "case_path": "sample_cases/windows_persistence_case",
+    "disk_path": "sample_cases/windows_persistence_case/image.E01",
+    "max_iterations": 3,
+    "memory_path": null,
+    "model_backend": "auto",
+    "output_path": "docs/execution_logs/windows-persistence-case",
+    "profile": "windows",
+    "remote_disk_path": null,
+    "remote_host": null,
+    "remote_identity_file": null,
+    "remote_insecure_no_host_key_check": false,
+    "remote_port": 22,
+    "remote_python": "python3",
+    "remote_timeout_sec": 120,
+    "remote_user": null,
+    "remote_workdir": null,
+    "tool_backend": "fixture"
+  },
+  "summary": {
+    "case_id": "windows-persistence-case",
+    "completed_at": "2026-04-25T11:35:21+00:00",
+    "confirmed_count": 2,
+    "findings_count": 4,
+    "inference_count": 2,
+    "issues_count": 1,
+    "iterations": 2,
+    "output_path": "docs/execution_logs/windows-persistence-case",
+    "started_at": "2026-04-25T11:35:21+00:00",
+    "status": "completed",
+    "token_usage": {
+      "completion_tokens": 0,
+      "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+      "prompt_tokens": 0,
+      "source": "local_reasoning_backend",
+      "total_tokens": 0,
+      "tracked": true
+    }
+  },
+  "token_usage": {
+    "completion_tokens": 0,
+    "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+    "prompt_tokens": 0,
+    "source": "local_reasoning_backend",
+    "total_tokens": 0,
+    "tracked": true
+  },
+  "tool_results": [
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.95,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "analyst": "CaseTrace Demo",
+            "case_id": "windows-persistence-case",
+            "case_path": "sample_cases/windows_persistence_case",
+            "disk_path": "sample_cases/windows_persistence_case/image.E01",
+            "expected_artifacts": [
+              "amcache_summary",
+              "browser_history",
+              "prefetch_summary",
+              "registry_autoruns",
+              "scheduled_tasks",
+              "timeline_mft",
+              "user_logons",
+              "yara_scan"
+            ],
+            "memory_path": null,
+            "notes": "Synthetic Windows workstation case with browser-delivered script execution and persistence.",
+            "profile": "windows",
+            "target_host": "WKSTN-23"
+          }
+        ]
+      },
+      "duration_ms": 1,
+      "errors": [],
+      "evidence_ids": [
+        "case-info-1-26db4fd2b5"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/case_info/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "case_info"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.95,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "access_mode": "read_only_image",
+            "disk_path": "sample_cases/windows_persistence_case/image.E01",
+            "kind": "case_access",
+            "mount_path": "sample_cases/windows_persistence_case/image.E01",
+            "read_only_guardrails": [
+              "No write-capable shell execution is exposed.",
+              "Tools only read fixture artifacts or typed local/remote case data.",
+              "All tool output is copied into run-local artifacts for auditability."
+            ],
+            "remote_disk_path": null,
+            "remote_host": null,
+            "tool_backend": "fixture"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "mount-image-readonly-1-2733fe58bb"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/mount_image_readonly/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "mount_image_readonly"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "confidence": 0.77,
+            "logon_type": "Interactive",
+            "source_ip": "10.0.0.24",
+            "timestamp": "2026-04-01T08:09:01Z",
+            "user": "Analyst"
+          }
+        ]
+      },
+      "duration_ms": 1,
+      "errors": [],
+      "evidence_ids": [
+        "user-logons-1-1c1c3c23da"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/user_logons/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "user_logons"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 2,
+        "records": [
+          {
+            "browser": "Edge",
+            "confidence": 0.78,
+            "downloaded_path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip",
+            "timestamp": "2026-04-01T08:11:20Z",
+            "url": "https://cdn-login-check.example/invoice_update.zip",
+            "user": "Analyst"
+          },
+          {
+            "browser": "Edge",
+            "confidence": 0.71,
+            "timestamp": "2026-04-01T08:12:04Z",
+            "url": "https://cdn-login-check.example/readme.html",
+            "user": "Analyst"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "browser-history-1-0b44ee91cd",
+        "browser-history-2-44c843441b"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/browser_history/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "browser_history"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "command_line": "powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "confidence": 0.86,
+            "evidence_id": "prefetch-powershell-update",
+            "executable": "powershell.exe",
+            "last_run": "2026-04-01T08:15:14Z",
+            "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "run_count": 7
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "prefetch-powershell-update"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/prefetch_summary/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "prefetch_summary"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "confidence": 0.82,
+            "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "program_name": "powershell.exe",
+            "publisher": "Microsoft Corporation",
+            "sha1": "deadc0de00112233445566778899aabbccddeeff"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "amcache-summary-1-bfde8d03fc"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/amcache_summary/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "amcache_summary"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 2,
+        "records": [
+          {
+            "action": "created",
+            "confidence": 0.83,
+            "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "timestamp": "2026-04-01T08:13:44Z"
+          },
+          {
+            "action": "created",
+            "confidence": 0.8,
+            "path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip",
+            "timestamp": "2026-04-01T08:11:21Z"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "timeline-mft-1-f429e34eb6",
+        "timeline-mft-2-90342805bb"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/timeline_mft/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "timeline_mft"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "confidence": 0.94,
+            "file_path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "rule": "Suspicious_PowerShell_Downloader",
+            "tags": [
+              "powershell",
+              "downloader"
+            ]
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "yara-scan-1-ac33edc758"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/yara_scan/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "yara_scan"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "confidence": 0.89,
+            "entry": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\ThemeUpdater",
+            "value": "powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "registry-autoruns-1-e6b70b4552"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/registry_autoruns/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "registry_autoruns"
+    },
+    {
+      "completed_at": "2026-04-25T11:35:21+00:00",
+      "confidence": 0.85,
+      "data": {
+        "record_count": 1,
+        "records": [
+          {
+            "command": "powershell.exe -WindowStyle Hidden -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+            "confidence": 0.87,
+            "task_name": "AdobeUpdaterCheck",
+            "trigger": "AtLogon"
+          }
+        ]
+      },
+      "duration_ms": 0,
+      "errors": [],
+      "evidence_ids": [
+        "scheduled-tasks-1-bfc2d01746"
+      ],
+      "inputs": {},
+      "raw_artifact_path": "docs/execution_logs/windows-persistence-case/raw/scheduled_tasks/01-2026-04-25T11-35-21+00-00.json",
+      "started_at": "2026-04-25T11:35:21+00:00",
+      "success": true,
+      "token_usage": {
+        "completion_tokens": 0,
+        "notes": "No external model tokens were consumed; reasoning used the local deterministic backend.",
+        "prompt_tokens": 0,
+        "source": "local_reasoning_backend",
+        "total_tokens": 0,
+        "tracked": true
+      },
+      "tool_name": "scheduled_tasks"
+    }
+  ]
+}

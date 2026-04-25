@@ -1,0 +1,69 @@
+[
+  {
+    "analyst_notes": "Iteration 2: powershell.exe executed 7 times.",
+    "confidence": 0.74,
+    "evidence_ids": [
+      "amcache-summary-1-bfde8d03fc",
+      "prefetch-powershell-update"
+    ],
+    "id": "suspicious-script-execution-observed-on-the-endpoint",
+    "severity": "high",
+    "sources": [
+      "amcache_summary",
+      "prefetch_summary"
+    ],
+    "status": "inference",
+    "summary": "Execution telemetry suggests a script or living-off-the-land binary ran from a suspicious location.",
+    "title": "Suspicious script execution observed on the endpoint"
+  },
+  {
+    "analyst_notes": "Iteration 2: Visited https://cdn-login-check.example/invoice_update.zip.",
+    "confidence": 0.85,
+    "evidence_ids": [
+      "browser-history-1-0b44ee91cd",
+      "browser-history-2-44c843441b",
+      "timeline-mft-2-90342805bb"
+    ],
+    "id": "likely-web-delivery-of-a-suspicious-payload",
+    "severity": "medium",
+    "sources": [
+      "browser_history",
+      "timeline_mft"
+    ],
+    "status": "confirmed",
+    "summary": "Browser activity and on-disk artifacts both reference invoice_update.zip, suggesting payload delivery.",
+    "title": "Likely web delivery of a suspicious payload"
+  },
+  {
+    "analyst_notes": "Iteration 2: Autorun entry HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\ThemeUpdater launches powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1.",
+    "confidence": 0.8500000000000001,
+    "evidence_ids": [
+      "registry-autoruns-1-e6b70b4552",
+      "scheduled-tasks-1-bfc2d01746"
+    ],
+    "id": "persistence-mechanism-likely-established-on-the-host",
+    "severity": "high",
+    "sources": [
+      "registry_autoruns",
+      "scheduled_tasks"
+    ],
+    "status": "confirmed",
+    "summary": "Persistence-related telemetry points to a suspicious autorun or scheduled task.",
+    "title": "Persistence mechanism likely established on the host"
+  },
+  {
+    "analyst_notes": "Iteration 2: YARA rule Suspicious_PowerShell_Downloader matched C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1.",
+    "confidence": 0.74,
+    "evidence_ids": [
+      "yara-scan-1-ac33edc758"
+    ],
+    "id": "known-suspicious-artifact-matched-detection-rules",
+    "severity": "high",
+    "sources": [
+      "yara_scan"
+    ],
+    "status": "inference",
+    "summary": "At least one artifact matched a detection signature during scanning.",
+    "title": "Known suspicious artifact matched detection rules"
+  }
+]

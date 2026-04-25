@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "action": "created",
+      "confidence": 0.83,
+      "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "timestamp": "2026-04-01T08:13:44Z"
+    },
+    {
+      "action": "created",
+      "confidence": 0.8,
+      "path": "C:\\Users\\Analyst\\Downloads\\invoice_update.zip",
+      "timestamp": "2026-04-01T08:11:21Z"
+    }
+  ],
+  "tool_name": "timeline_mft"
+}

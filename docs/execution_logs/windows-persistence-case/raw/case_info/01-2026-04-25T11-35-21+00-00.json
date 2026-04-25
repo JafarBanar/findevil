@@ -1,0 +1,24 @@
+{
+  "inputs": {},
+  "metadata": {
+    "analyst": "CaseTrace Demo",
+    "case_id": "windows-persistence-case",
+    "case_path": "sample_cases/windows_persistence_case",
+    "disk_path": "sample_cases/windows_persistence_case/image.E01",
+    "expected_artifacts": [
+      "amcache_summary",
+      "browser_history",
+      "prefetch_summary",
+      "registry_autoruns",
+      "scheduled_tasks",
+      "timeline_mft",
+      "user_logons",
+      "yara_scan"
+    ],
+    "memory_path": null,
+    "notes": "Synthetic Windows workstation case with browser-delivered script execution and persistence.",
+    "profile": "windows",
+    "target_host": "WKSTN-23"
+  },
+  "tool_name": "case_info"
+}

@@ -15,7 +15,7 @@ from .schemas import (
 )
 from .store import RunArtifactStore
 from .tools import ToolContext, ToolRegistry
-from .utils import now_utc_iso, stable_id, to_jsonable
+from .utils import default_token_usage, merge_token_usage, now_utc_iso, stable_id, to_jsonable
 from .verification import verify_findings
 
 
@@ -87,6 +87,7 @@ class AnalysisOrchestrator:
                         "errors": execution.result.errors,
                         "evidence_ids": execution.result.evidence_ids,
                         "raw_artifact_path": execution.result.raw_artifact_path,
+                        "token_usage": execution.result.token_usage,
                     }
                 )
                 self._log_event(
@@ -153,6 +154,7 @@ class AnalysisOrchestrator:
             started_at=started_at,
             completed_at=completed_at,
             output_path=request.output_path,
+            token_usage=merge_token_usage(result.token_usage for result in state.tool_results.values()),
         )
         self._log_event(
             store,
@@ -214,6 +216,7 @@ class AnalysisOrchestrator:
                 "issues": state.issues,
                 "iteration_history": state.iteration_history,
                 "tool_results": list(state.tool_results.values()),
+                "token_usage": summary.token_usage,
             },
         )
         store.write_text("report.md", render_report(request, summary, state, state.findings, state.issues))
@@ -235,5 +238,6 @@ class AnalysisOrchestrator:
                 action=action,
                 message=message,
                 data=data,
+                token_usage=default_token_usage(),
             )
         )

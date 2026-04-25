@@ -50,6 +50,7 @@ class ToolResult:
     completed_at: str
     duration_ms: int
     success: bool
+    token_usage: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -85,6 +86,7 @@ class ExecutionEvent:
     action: str
     message: str
     data: dict[str, Any] = field(default_factory=dict)
+    token_usage: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -99,6 +101,7 @@ class RunSummary:
     started_at: str
     completed_at: str
     output_path: str
+    token_usage: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

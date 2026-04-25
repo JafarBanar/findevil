@@ -22,6 +22,7 @@ def render_report(
         f"- Memory: `{request.memory_path or 'not provided'}`",
         f"- Iterations: `{summary.iterations}`",
         f"- Output: `{summary.output_path}`",
+        f"- Token usage: `prompt={summary.token_usage.get('prompt_tokens', 0)} completion={summary.token_usage.get('completion_tokens', 0)} total={summary.token_usage.get('total_tokens', 0)}`",
         "",
         "## Findings",
     ]
@@ -73,4 +74,3 @@ def render_report(
             f"- Iteration {record.iteration}: tools={', '.join(record.tools_run)} findings={len(record.findings)} issues={len(record.issues)}"
         )
     return "\n".join(lines) + "\n"
-

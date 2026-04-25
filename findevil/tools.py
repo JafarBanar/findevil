@@ -9,7 +9,7 @@ from .remote import RemoteSIFTRunner
 from .case_data import CaseDataset
 from .schemas import AnalysisState, CaseRequest, EvidenceRecord, ToolExecution, ToolResult
 from .store import RunArtifactStore
-from .utils import now_utc_iso, stable_id
+from .utils import default_token_usage, now_utc_iso, stable_id
 
 
 DEFAULT_KIND_BY_TOOL = {
@@ -136,6 +136,7 @@ def _finish_tool_result(
         completed_at=completed_at,
         duration_ms=duration_ms,
         success=not errors,
+        token_usage=default_token_usage(),
     )
     return ToolExecution(result=result, evidence=copied_evidence)
 

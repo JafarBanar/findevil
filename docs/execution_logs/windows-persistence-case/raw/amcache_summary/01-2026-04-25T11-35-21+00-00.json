@@ -1,0 +1,15 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "confidence": 0.82,
+      "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "program_name": "powershell.exe",
+      "publisher": "Microsoft Corporation",
+      "sha1": "deadc0de00112233445566778899aabbccddeeff"
+    }
+  ],
+  "tool_name": "amcache_summary"
+}

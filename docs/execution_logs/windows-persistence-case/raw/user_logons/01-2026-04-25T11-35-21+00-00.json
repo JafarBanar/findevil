@@ -1,0 +1,15 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "confidence": 0.77,
+      "logon_type": "Interactive",
+      "source_ip": "10.0.0.24",
+      "timestamp": "2026-04-01T08:09:01Z",
+      "user": "Analyst"
+    }
+  ],
+  "tool_name": "user_logons"
+}

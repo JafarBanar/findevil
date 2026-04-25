@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "confidence": 0.94,
+      "file_path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "rule": "Suspicious_PowerShell_Downloader",
+      "tags": [
+        "powershell",
+        "downloader"
+      ]
+    }
+  ],
+  "tool_name": "yara_scan"
+}

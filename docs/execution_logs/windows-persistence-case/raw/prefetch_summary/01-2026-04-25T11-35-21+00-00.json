@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "command_line": "powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "confidence": 0.86,
+      "evidence_id": "prefetch-powershell-update",
+      "executable": "powershell.exe",
+      "last_run": "2026-04-01T08:15:14Z",
+      "path": "C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "run_count": 7
+    }
+  ],
+  "tool_name": "prefetch_summary"
+}

@@ -1,0 +1,14 @@
+{
+  "errors": [],
+  "inputs": {},
+  "mode": "fixture_artifact",
+  "records": [
+    {
+      "command": "powershell.exe -WindowStyle Hidden -File C:\\Users\\Analyst\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\update.ps1",
+      "confidence": 0.87,
+      "task_name": "AdobeUpdaterCheck",
+      "trigger": "AtLogon"
+    }
+  ],
+  "tool_name": "scheduled_tasks"
+}

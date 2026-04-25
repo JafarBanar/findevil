@@ -80,6 +80,7 @@ class CaseTraceMCPServer:
                     "success": execution.result.success,
                     "errors": execution.result.errors,
                     "evidence_ids": execution.result.evidence_ids,
+                    "token_usage": execution.result.token_usage,
                 }
             )
             structured = {
@@ -138,4 +139,3 @@ class CaseTraceMCPServer:
             "id": request_id,
             "error": {"code": code, "message": message},
         }
-

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +38,53 @@ def dump_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def default_token_usage(
+    *,
+    source: str = "local_reasoning_backend",
+    notes: str = "No external model tokens were consumed; reasoning used the local deterministic backend.",
+) -> dict[str, Any]:
+    return {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "tracked": True,
+        "source": source,
+        "notes": notes,
+    }
+
+
+def merge_token_usage(usages: Iterable[dict[str, Any] | None]) -> dict[str, Any]:
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+    tracked = True
+    sources: list[str] = []
+    notes: list[str] = []
+
+    for usage in usages:
+        if not usage:
+            continue
+        prompt_tokens += int(usage.get("prompt_tokens", 0))
+        completion_tokens += int(usage.get("completion_tokens", 0))
+        total_tokens += int(usage.get("total_tokens", 0))
+        tracked = tracked and bool(usage.get("tracked", False))
+        source = str(usage.get("source", "")).strip()
+        if source and source not in sources:
+            sources.append(source)
+        note = str(usage.get("notes", "")).strip()
+        if note and note not in notes:
+            notes.append(note)
+
+    return {
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "tracked": tracked,
+        "source": ", ".join(sources) if sources else "unknown",
+        "notes": " ".join(notes).strip(),
+    }
+
+
 def to_jsonable(value: Any) -> Any:
     if is_dataclass(value):
         return to_jsonable(asdict(value))
@@ -49,4 +97,3 @@ def to_jsonable(value: Any) -> Any:
     if isinstance(value, tuple):
         return [to_jsonable(item) for item in value]
     return value
-

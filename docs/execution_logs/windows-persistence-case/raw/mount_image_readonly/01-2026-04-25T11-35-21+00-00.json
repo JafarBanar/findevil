@@ -1,0 +1,18 @@
+{
+  "inputs": {},
+  "record": {
+    "access_mode": "read_only_image",
+    "disk_path": "sample_cases/windows_persistence_case/image.E01",
+    "kind": "case_access",
+    "mount_path": "sample_cases/windows_persistence_case/image.E01",
+    "read_only_guardrails": [
+      "No write-capable shell execution is exposed.",
+      "Tools only read fixture artifacts or typed local/remote case data.",
+      "All tool output is copied into run-local artifacts for auditability."
+    ],
+    "remote_disk_path": null,
+    "remote_host": null,
+    "tool_backend": "fixture"
+  },
+  "tool_name": "mount_image_readonly"
+}

@@ -102,9 +102,10 @@ Because I did not have a Windows host available for the final demo, I created a 
 ## Try It Out Links
 
 - GitHub repo: https://github.com/JafarBanar/findevil
+- Public execution logs: https://github.com/JafarBanar/findevil/blob/main/docs/EXECUTION_LOGS.md
 - Hackathon page: https://findevil.devpost.com/
 
-If you upload the demo video to YouTube as unlisted, add that as another link.
+Add the public video link after confirming the YouTube visibility setting in Studio.
 
 ## Media Suggestions
 

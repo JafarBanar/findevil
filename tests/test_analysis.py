@@ -52,6 +52,7 @@ class AnalysisTests(unittest.TestCase):
             self.assertTrue((Path(request.output_path) / "report.md").exists())
             self.assertTrue((Path(request.output_path) / "tool_calls.jsonl").exists())
             self.assertTrue(any(issue.issue_type == "unsupported_claim" for issue in result.state.issues))
+            self.assertEqual(result.summary.token_usage["total_tokens"], 0)
 
     def test_evaluate_shows_iteration_improvement(self) -> None:
         with TemporaryDirectory() as temp_dir:
@@ -147,6 +148,8 @@ class AnalysisTests(unittest.TestCase):
                 called["result"]["structuredContent"]["tool_name"],
                 "case_info",
             )
+            tool_calls = (Path(request.output_path) / "tool_calls.jsonl").read_text(encoding="utf-8")
+            self.assertIn("\"token_usage\"", tool_calls)
 
     def test_remote_runner_builds_ssh_command(self) -> None:
         request = CaseRequest(

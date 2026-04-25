@@ -8,6 +8,7 @@ CaseTrace is a read-only, self-correcting DFIR agent for the FIND EVIL! hackatho
 - Dataset documentation: [docs/DATASETS.md](./docs/DATASETS.md)
 - Accuracy report: [docs/ACCURACY_REPORT.md](./docs/ACCURACY_REPORT.md)
 - Public Windows validation: [docs/CFREDS_DATA_LEAKAGE_VALIDATION.md](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md)
+- Execution logs: [docs/EXECUTION_LOGS.md](./docs/EXECUTION_LOGS.md)
 - Validated demo notes: [docs/NTFS_IMAGE_VALIDATION.md](./docs/NTFS_IMAGE_VALIDATION.md)
 
 ## Highlights
@@ -70,6 +71,7 @@ Submission support docs:
 - [Dataset documentation](./docs/DATASETS.md)
 - [Accuracy report draft](./docs/ACCURACY_REPORT.md)
 - [Public Windows validation notes](./docs/CFREDS_DATA_LEAKAGE_VALIDATION.md)
+- [Execution logs](./docs/EXECUTION_LOGS.md)
 - [Devpost submission copy](./docs/DEVPOST_SUBMISSION.md)
 - [Architecture diagram (PNG)](./docs/architecture_diagram.png)
 - [Architecture diagram (PDF)](./docs/architecture_diagram.pdf)
